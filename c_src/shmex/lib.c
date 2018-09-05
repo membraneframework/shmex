@@ -192,7 +192,7 @@ ERL_NIF_TERM shmex_make_term(ErlNifEnv * env, Shmex * payload) {
   if (res) {
     return return_term;
   } else {
-    return membrane_util_make_error_internal(env, "make_map_from_arrays");
+    return bunch_make_error_internal(env, "make_map_from_arrays");
   }
 }
 
@@ -203,17 +203,17 @@ ERL_NIF_TERM shmex_make_term(ErlNifEnv * env, Shmex * payload) {
 ERL_NIF_TERM shmex_make_error_term(ErlNifEnv * env, ShmexLibResult result) {
   switch (result) {
     case shmex_RES_OK:
-      return membrane_util_make_error_internal(env, "ok_is_not_error");
+      return bunch_make_error_internal(env, "ok_is_not_error");
     case shmex_ERROR_SHM_OPEN:
-      return membrane_util_make_error_errno(env, "shm_open");
+      return bunch_make_error_errno(env, "shm_open");
     case shmex_ERROR_FTRUNCATE:
-      return membrane_util_make_error_errno(env, "ftruncate");
+      return bunch_make_error_errno(env, "ftruncate");
     case shmex_ERROR_MMAP:
-      return membrane_util_make_error_errno(env, "mmap");
+      return bunch_make_error_errno(env, "mmap");
     case shmex_ERROR_SHM_MAPPED:
-      return membrane_util_make_error_internal(env, "shm_is_mapped");
+      return bunch_make_error_internal(env, "shm_is_mapped");
     default:
-      return membrane_util_make_error_internal(env, "unknown_error");
+      return bunch_make_error_internal(env, "unknown_error");
   }
 }
 

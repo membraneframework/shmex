@@ -1,20 +1,20 @@
-defmodule Membrane.Common.C.Mixfile do
+defmodule Shmex.Mixfile do
   use Mix.Project
-  Application.put_env(:bundlex, :membrane_common_c, __ENV__)
 
-  @version "0.2.0"
+  @version "0.1.0"
+  @github_url "https://github.com/membraneframework/shmex"
 
   def project do
     [
-      app: :membrane_common_c,
+      app: :shmex,
       version: @version,
-      elixir: "~> 1.6",
+      elixir: "~> 1.7",
       elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:bundlex] ++ Mix.compilers(),
-      description: "Membrane Multimedia Framework (C language common routines)",
+      description: "Elixir bindings for shared memory",
       package: package(),
-      name: "Membrane: Common C",
-      source_url: link(),
+      name: "Shmex",
+      source_url: @github_url,
       docs: docs(),
       deps: deps()
     ]
@@ -23,17 +23,13 @@ defmodule Membrane.Common.C.Mixfile do
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
-  defp link do
-    "https://github.com/membraneframework/membrane-common-c"
-  end
-
   defp package do
     [
       maintainers: ["Membrane Team"],
       licenses: ["Apache 2.0"],
       files: ["lib", "c_src", "mix.exs", "README*", "LICENSE*", ".formatter.exs", "bundlex.exs"],
       links: %{
-        "GitHub" => link(),
+        "GitHub" => @github_url,
         "Membrane Framework Homepage" => "https://membraneframework.org"
       }
     ]
@@ -50,7 +46,9 @@ defmodule Membrane.Common.C.Mixfile do
   defp deps() do
     [
       {:ex_doc, "~> 0.19", only: :dev, runtime: false},
-      {:bundlex, "~> 0.1.3"}
+      {:bundlex, "~> 0.1"},
+      {:bunch, "~> 0.1.1"},
+      {:bunch_native, "~> 0.1"}
     ]
   end
 end

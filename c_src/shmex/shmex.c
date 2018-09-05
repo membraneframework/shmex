@@ -28,14 +28,14 @@ static void create_guard(ErlNifEnv * env, Shmex *payload) {
 
 static ERL_NIF_TERM export_allocate(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   UNUSED(argc);
-  MEMBRANE_UTIL_PARSE_shmex_ARG(0, payload);
+  PARSE_SHMEX_ARG(0, payload);
   ERL_NIF_TERM return_term;
 
   ShmexLibResult result = shmex_allocate(&payload);
 
   if (shmex_RES_OK == result) {
     create_guard(env, &payload);
-    return_term = membrane_util_make_ok_tuple(env, shmex_make_term(env, &payload));
+    return_term = bunch_make_ok_tuple(env, shmex_make_term(env, &payload));
   } else {
     return_term = shmex_make_error_term(env, result);
   }
@@ -46,25 +46,25 @@ static ERL_NIF_TERM export_allocate(ErlNifEnv* env, int argc, const ERL_NIF_TERM
 
 static ERL_NIF_TERM export_add_guard(ErlNifEnv * env, int argc, const ERL_NIF_TERM argv[]) {
   UNUSED(argc);
-  MEMBRANE_UTIL_PARSE_shmex_ARG(0, payload);
+  PARSE_SHMEX_ARG(0, payload);
 
   ShmGuard * guard;
   if (enif_get_resource(env, payload.guard, RES_shmex_GUARD_TYPE, (void **) &guard)) {
-    return membrane_util_make_error(env, enif_make_atom(env, "already_guarded"));
+    return bunch_make_error(env, enif_make_atom(env, "already_guarded"));
   };
   create_guard(env, &payload);
-  return membrane_util_make_ok_tuple(env, shmex_make_term(env, &payload));
+  return bunch_make_ok_tuple(env, shmex_make_term(env, &payload));
 }
 
 static ERL_NIF_TERM export_set_capacity(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   UNUSED(argc);
-  MEMBRANE_UTIL_PARSE_shmex_ARG(0, payload);
-  MEMBRANE_UTIL_PARSE_UINT_ARG(1, capacity);
+  PARSE_SHMEX_ARG(0, payload);
+  BUNCH_PARSE_UINT_ARG(1, capacity);
   ERL_NIF_TERM return_term;
 
   ShmexLibResult result = shmex_set_capacity(&payload, capacity);
   if (shmex_RES_OK == result) {
-    return_term = membrane_util_make_ok_tuple(env, shmex_make_term(env, &payload));
+    return_term = bunch_make_ok_tuple(env, shmex_make_term(env, &payload));
   } else {
     return_term = shmex_make_error_term(env, result);
   }
@@ -74,12 +74,12 @@ static ERL_NIF_TERM export_set_capacity(ErlNifEnv* env, int argc, const ERL_NIF_
 
 static ERL_NIF_TERM export_read(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   UNUSED(argc);
-  MEMBRANE_UTIL_PARSE_shmex_ARG(0, payload);
-  MEMBRANE_UTIL_PARSE_UINT_ARG(1, cnt);
+  PARSE_SHMEX_ARG(0, payload);
+  BUNCH_PARSE_UINT_ARG(1, cnt);
 
   ERL_NIF_TERM return_term;
   if (cnt > payload.size) {
-    return_term = membrane_util_make_error_args(env, "cnt", "cnt is greater than payload size");
+    return_term = bunch_make_error_args(env, "cnt", "cnt is greater than payload size");
     goto exit_read;
   }
 
@@ -93,7 +93,7 @@ static ERL_NIF_TERM export_read(ErlNifEnv* env, int argc, const ERL_NIF_TERM arg
   unsigned char * output_data = enif_make_new_binary(env, cnt, &out_bin_term);
   memcpy(output_data, payload.mapped_memory, cnt);
 
-  return_term = membrane_util_make_ok_tuple(env, out_bin_term);
+  return_term = bunch_make_ok_tuple(env, out_bin_term);
 exit_read:
   shmex_release(&payload);
   return return_term;
@@ -101,8 +101,8 @@ exit_read:
 
 static ERL_NIF_TERM export_write(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   UNUSED(argc);
-  MEMBRANE_UTIL_PARSE_shmex_ARG(0, payload);
-  MEMBRANE_UTIL_PARSE_BINARY_ARG(1, data);
+  PARSE_SHMEX_ARG(0, payload);
+  BUNCH_PARSE_BINARY_ARG(1, data);
   ERL_NIF_TERM return_term;
 
   if (payload.capacity < data.size) {
@@ -117,7 +117,7 @@ static ERL_NIF_TERM export_write(ErlNifEnv* env, int argc, const ERL_NIF_TERM ar
 
   memcpy(payload.mapped_memory, (void *)data.data, data.size);
   payload.size = data.size;
-  return_term = membrane_util_make_ok_tuple(env, shmex_make_term(env, &payload));
+  return_term = bunch_make_ok_tuple(env, shmex_make_term(env, &payload));
 exit_write:
   shmex_release(&payload);
   return return_term;
@@ -125,8 +125,8 @@ exit_write:
 
 static ERL_NIF_TERM export_split_at(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   UNUSED(argc);
-  MEMBRANE_UTIL_PARSE_shmex_ARG(0, old_payload);
-  MEMBRANE_UTIL_PARSE_UINT_ARG(1, split_pos);
+  PARSE_SHMEX_ARG(0, old_payload);
+  BUNCH_PARSE_UINT_ARG(1, split_pos);
   Shmex new_payload;
   shmex_init(env, &new_payload, 4096);
 
@@ -160,7 +160,7 @@ static ERL_NIF_TERM export_split_at(ErlNifEnv* env, int argc, const ERL_NIF_TERM
 
   old_payload.size = split_pos;
 
-  return_term = membrane_util_make_ok_tuple(
+  return_term = bunch_make_ok_tuple(
     env,
     enif_make_tuple2(
       env,
@@ -180,8 +180,8 @@ exit_split_at:
 
 static ERL_NIF_TERM export_trim_leading(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   UNUSED(argc);
-  MEMBRANE_UTIL_PARSE_shmex_ARG(0, payload);
-  MEMBRANE_UTIL_PARSE_UINT_ARG(1, offset);
+  PARSE_SHMEX_ARG(0, payload);
+  BUNCH_PARSE_UINT_ARG(1, offset);
   ERL_NIF_TERM return_term;
   ShmexLibResult result;
 
@@ -194,7 +194,7 @@ static ERL_NIF_TERM export_trim_leading(ErlNifEnv* env, int argc, const ERL_NIF_
   size_t new_size = payload.size - offset;
   memmove(payload.mapped_memory, payload.mapped_memory + offset, new_size);
   payload.size = new_size;
-  return_term = membrane_util_make_ok_tuple(env, shmex_make_term(env, &payload));
+  return_term = bunch_make_ok_tuple(env, shmex_make_term(env, &payload));
 exit_trim_leading:
   shmex_release(&payload);
   return return_term;
@@ -202,8 +202,8 @@ exit_trim_leading:
 
 static ERL_NIF_TERM export_concat(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   UNUSED(argc);
-  MEMBRANE_UTIL_PARSE_shmex_ARG(0, left);
-  MEMBRANE_UTIL_PARSE_shmex_ARG(1, right);
+  PARSE_SHMEX_ARG(0, left);
+  PARSE_SHMEX_ARG(1, right);
   ERL_NIF_TERM return_term;
   ShmexLibResult result;
 
@@ -228,7 +228,7 @@ static ERL_NIF_TERM export_concat(ErlNifEnv* env, int argc, const ERL_NIF_TERM a
 
   memcpy(left.mapped_memory + left.size, right.mapped_memory, right.size);
   left.size = new_capacity;
-  return_term = membrane_util_make_ok_tuple(env, shmex_make_term(env, &left));
+  return_term = bunch_make_ok_tuple(env, shmex_make_term(env, &left));
 exit_concat:
   shmex_release(&left);
   shmex_release(&right);

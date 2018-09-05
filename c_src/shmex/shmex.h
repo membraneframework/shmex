@@ -7,7 +7,7 @@
 #include <sys/stat.h>        /* For mode constants */
 #include <fcntl.h>
 #include <erl_nif.h>
-#include <membrane/membrane.h>
+#include <bunch/bunch.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>

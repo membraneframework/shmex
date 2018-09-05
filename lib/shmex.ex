@@ -3,19 +3,22 @@ defmodule Shmex do
   This module allows using payload placed in POSIX shared memory on POSIX
   compliant systems.
 
-  Defines an opaque struct implementing protocol `Membrane.Payload`.
-  Struct should be passed to elements using native code. There are functions in
-  `:shmex_lib` (it's native library that is exported via Bundlex)
-  that will allow to transorm Elixir struct into C struct
-  and then access the shared memory from the native code.
+  Defines a struct representing the actual shared memory object. The struct
+  should not be modified, and should always be passed around as a whole - see
+  `t:#{inspect(__MODULE__)}.t/0`
   """
   alias __MODULE__.Native
 
   @typedoc """
-  Struct describing payload kept in shared memory.
+  Struct describing payload kept in shared memory. Should not be modified
+  and should always be passed around as a whole
 
-  Should not be modified directly. Shared memory should be available as long
-  as the associated struct is not garbage collected.
+  ...including passing to the native code - there are functions in `:shmex_lib`
+  (a native library exported via Bundlex) that will allow to transorm Elixir
+  struct into a C struct and then access the shared memory from the native code.)
+
+  Shared memory should be available as long as the associated struct is not
+  garbage collected.
   """
   @type t :: %__MODULE__{
           name: binary(),
@@ -29,6 +32,7 @@ defmodule Shmex do
   @doc """
   Creates a new, empty Shm payload
   """
+  @spec empty() :: t()
   def empty() do
     empty(4096)
   end
@@ -36,6 +40,7 @@ defmodule Shmex do
   @doc """
   Creates a new, empty Shm payload with the given capacity
   """
+  @spec empty(capacity :: pos_integer) :: t()
   def empty(capacity) do
     {:ok, payload} = create(capacity)
     payload
