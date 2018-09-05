@@ -23,9 +23,9 @@ defmodule Shmex.Native do
 
   This function should be only used when `Shmex` struct was created by
   some other NIF and even though the SHM exists, it's guard field is set to `nil`.
-  Trying to use it with SHM obtained via `create/1` will result in error.
+  Trying to use it with SHM obtained via `allocate/1` will result in error.
 
-  See also docs for `create/1`
+  See also docs for `allocate/1`
   """
   @spec add_guard(Shmex.t()) :: Type.try_t(Shmex.t())
   defnif add_guard(payload)

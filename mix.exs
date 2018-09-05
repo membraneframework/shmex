@@ -9,7 +9,6 @@ defmodule Shmex.Mixfile do
       app: :shmex,
       version: @version,
       elixir: "~> 1.7",
-      elixirc_paths: elixirc_paths(Mix.env()),
       compilers: [:bundlex] ++ Mix.compilers(),
       description: "Elixir bindings for shared memory",
       package: package(),
@@ -19,9 +18,6 @@ defmodule Shmex.Mixfile do
       deps: deps()
     ]
   end
-
-  defp elixirc_paths(:test), do: ["lib", "test/support"]
-  defp elixirc_paths(_), do: ["lib"]
 
   defp package do
     [

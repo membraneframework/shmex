@@ -30,18 +30,10 @@ defmodule Shmex do
   defstruct name: nil, guard: nil, size: 0, capacity: 4096
 
   @doc """
-  Creates a new, empty Shm payload
-  """
-  @spec empty() :: t()
-  def empty() do
-    empty(4096)
-  end
-
-  @doc """
   Creates a new, empty Shm payload with the given capacity
   """
   @spec empty(capacity :: pos_integer) :: t()
-  def empty(capacity) do
+  def empty(capacity \\ 4096) do
     {:ok, payload} = create(capacity)
     payload
   end
