@@ -3,15 +3,15 @@
 ErlNifResourceType *RES_shmex_GUARD_TYPE;
 
 void res_shmex_guard_destructor(ErlNifEnv* env, void * resource) {
-  UNUSED(env);
+  BUNCH_UNUSED(env);
 
   ShmGuard *guard = (ShmGuard *) resource;
   shm_unlink(guard->name);
 }
 
 int load(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info) {
-  UNUSED(load_info);
-  UNUSED(priv_data);
+  BUNCH_UNUSED(load_info);
+  BUNCH_UNUSED(priv_data);
 
   int flags = ERL_NIF_RT_CREATE | ERL_NIF_RT_TAKEOVER;
   RES_shmex_GUARD_TYPE =
@@ -27,7 +27,7 @@ static void create_guard(ErlNifEnv * env, Shmex *payload) {
 }
 
 static ERL_NIF_TERM export_allocate(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
-  UNUSED(argc);
+  BUNCH_UNUSED(argc);
   PARSE_SHMEX_ARG(0, payload);
   ERL_NIF_TERM return_term;
 
@@ -45,7 +45,7 @@ static ERL_NIF_TERM export_allocate(ErlNifEnv* env, int argc, const ERL_NIF_TERM
 }
 
 static ERL_NIF_TERM export_add_guard(ErlNifEnv * env, int argc, const ERL_NIF_TERM argv[]) {
-  UNUSED(argc);
+  BUNCH_UNUSED(argc);
   PARSE_SHMEX_ARG(0, payload);
 
   ShmGuard * guard;
@@ -57,7 +57,7 @@ static ERL_NIF_TERM export_add_guard(ErlNifEnv * env, int argc, const ERL_NIF_TE
 }
 
 static ERL_NIF_TERM export_set_capacity(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
-  UNUSED(argc);
+  BUNCH_UNUSED(argc);
   PARSE_SHMEX_ARG(0, payload);
   BUNCH_PARSE_UINT_ARG(1, capacity);
   ERL_NIF_TERM return_term;
@@ -73,7 +73,7 @@ static ERL_NIF_TERM export_set_capacity(ErlNifEnv* env, int argc, const ERL_NIF_
 }
 
 static ERL_NIF_TERM export_read(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
-  UNUSED(argc);
+  BUNCH_UNUSED(argc);
   PARSE_SHMEX_ARG(0, payload);
   BUNCH_PARSE_UINT_ARG(1, cnt);
 
@@ -100,7 +100,7 @@ exit_read:
 }
 
 static ERL_NIF_TERM export_write(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
-  UNUSED(argc);
+  BUNCH_UNUSED(argc);
   PARSE_SHMEX_ARG(0, payload);
   BUNCH_PARSE_BINARY_ARG(1, data);
   ERL_NIF_TERM return_term;
@@ -124,7 +124,7 @@ exit_write:
 }
 
 static ERL_NIF_TERM export_split_at(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
-  UNUSED(argc);
+  BUNCH_UNUSED(argc);
   PARSE_SHMEX_ARG(0, old_payload);
   BUNCH_PARSE_UINT_ARG(1, split_pos);
   Shmex new_payload;
@@ -179,7 +179,7 @@ exit_split_at:
 }
 
 static ERL_NIF_TERM export_trim_leading(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
-  UNUSED(argc);
+  BUNCH_UNUSED(argc);
   PARSE_SHMEX_ARG(0, payload);
   BUNCH_PARSE_UINT_ARG(1, offset);
   ERL_NIF_TERM return_term;
@@ -201,7 +201,7 @@ exit_trim_leading:
 }
 
 static ERL_NIF_TERM export_concat(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
-  UNUSED(argc);
+  BUNCH_UNUSED(argc);
   PARSE_SHMEX_ARG(0, left);
   PARSE_SHMEX_ARG(1, right);
   ERL_NIF_TERM return_term;
