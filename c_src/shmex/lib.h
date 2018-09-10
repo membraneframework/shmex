@@ -36,8 +36,14 @@ typedef enum ShmexLibResult {
   shmex_ERROR_SHM_MAPPED
 } ShmexLibResult;
 
+typedef struct _ShmexGuard {
+  char name[NAME_MAX+1];
+} ShmexGuard;
+
 void shmex_generate_name(Shmex * payload);
 void shmex_init(ErlNifEnv * env, Shmex * payload, unsigned capacity);
+void shmex_add_guard(ErlNifEnv * env, ErlNifResourceType* guard_type, Shmex *payload);
+void shmex_guard_destructor(ErlNifEnv* env, void * resource);
 int shmex_get_from_term(ErlNifEnv * env, ERL_NIF_TERM record, Shmex * payload);
 ShmexLibResult shmex_allocate(Shmex * payload);
 void shmex_release(Shmex *payload);
