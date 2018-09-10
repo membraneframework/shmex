@@ -27,6 +27,30 @@ void shmex_init(ErlNifEnv * env, Shmex * payload, unsigned capacity) {
 }
 
 /**
+ * Creates a guard and adds it to given payload.
+ *
+ * Once the guard is garbage collected, the payload is freed.
+ */
+void shmex_add_guard(ErlNifEnv * env, ErlNifResourceType* guard_type, Shmex *payload) {
+  ShmexGuard *guard = enif_alloc_resource(guard_type, sizeof(*guard));
+  strcpy(guard->name, payload->name);
+  payload->guard = enif_make_resource(env, guard);
+  enif_release_resource(guard);
+}
+
+/**
+ * Destructor for payload guards.
+ *
+ * It is to be passed as a destructor to `enif_open_resource_type` function.
+ */
+void shmex_guard_destructor(ErlNifEnv* env, void * resource) {
+  BUNCH_UNUSED(env);
+
+  ShmexGuard *guard = (ShmexGuard *) resource;
+  shm_unlink(guard->name);
+}
+
+/**
  * Initializes Shmex C struct using data from Shmex Elixir struct
  *
  * Each call should be paired with `shmex_release` call to deallocate resources

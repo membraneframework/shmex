@@ -1,29 +1,15 @@
 #include "shmex.h"
 
-ErlNifResourceType *RES_shmex_GUARD_TYPE;
-
-void res_shmex_guard_destructor(ErlNifEnv* env, void * resource) {
-  BUNCH_UNUSED(env);
-
-  ShmGuard *guard = (ShmGuard *) resource;
-  shm_unlink(guard->name);
-}
+ErlNifResourceType *SHMEX_GUARD_RESOURCE_TYPE;
 
 int load(ErlNifEnv* env, void** priv_data, ERL_NIF_TERM load_info) {
   BUNCH_UNUSED(load_info);
   BUNCH_UNUSED(priv_data);
 
   int flags = ERL_NIF_RT_CREATE | ERL_NIF_RT_TAKEOVER;
-  RES_shmex_GUARD_TYPE =
-    enif_open_resource_type(env, NULL, "ShmGuard", res_shmex_guard_destructor, flags, NULL);
+  SHMEX_GUARD_RESOURCE_TYPE =
+    enif_open_resource_type(env, NULL, "ShmexGuard", shmex_guard_destructor, flags, NULL);
   return 0;
-}
-
-static void create_guard(ErlNifEnv * env, Shmex *payload) {
-  ShmGuard *guard = enif_alloc_resource(RES_shmex_GUARD_TYPE, sizeof(*guard));
-  strcpy(guard->name, payload->name);
-  payload->guard = enif_make_resource(env, guard);
-  enif_release_resource(guard);
 }
 
 static ERL_NIF_TERM export_allocate(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
@@ -34,7 +20,7 @@ static ERL_NIF_TERM export_allocate(ErlNifEnv* env, int argc, const ERL_NIF_TERM
   ShmexLibResult result = shmex_allocate(&payload);
 
   if (shmex_RES_OK == result) {
-    create_guard(env, &payload);
+    shmex_add_guard(env, SHMEX_GUARD_RESOURCE_TYPE, &payload);
     return_term = bunch_make_ok_tuple(env, shmex_make_term(env, &payload));
   } else {
     return_term = shmex_make_error_term(env, result);
@@ -48,11 +34,11 @@ static ERL_NIF_TERM export_add_guard(ErlNifEnv * env, int argc, const ERL_NIF_TE
   BUNCH_UNUSED(argc);
   PARSE_SHMEX_ARG(0, payload);
 
-  ShmGuard * guard;
-  if (enif_get_resource(env, payload.guard, RES_shmex_GUARD_TYPE, (void **) &guard)) {
+  ShmexGuard * guard;
+  if (enif_get_resource(env, payload.guard, SHMEX_GUARD_RESOURCE_TYPE, (void **) &guard)) {
     return bunch_make_error(env, enif_make_atom(env, "already_guarded"));
   };
-  create_guard(env, &payload);
+  shmex_add_guard(env, SHMEX_GUARD_RESOURCE_TYPE, &payload);
   return bunch_make_ok_tuple(env, shmex_make_term(env, &payload));
 }
 
@@ -144,7 +130,7 @@ static ERL_NIF_TERM export_split_at(ErlNifEnv* env, int argc, const ERL_NIF_TERM
   new_payload.size = new_size;
 
   result = shmex_allocate(&new_payload);
-  create_guard(env, &new_payload);
+  shmex_add_guard(env, SHMEX_GUARD_RESOURCE_TYPE, &new_payload);
   if (shmex_RES_OK != result) {
     return_term = shmex_make_error_term(env, result);
     goto exit_split_at;
