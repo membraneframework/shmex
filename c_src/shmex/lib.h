@@ -29,11 +29,11 @@ typedef struct {
 #define SHMEX_ALLOC_MAX_ATTEMPTS 1000
 
 typedef enum ShmexLibResult {
-  shmex_RES_OK,
-  shmex_ERROR_SHM_OPEN,
-  shmex_ERROR_FTRUNCATE,
-  shmex_ERROR_MMAP,
-  shmex_ERROR_SHM_MAPPED
+  SHMEX_RES_OK,
+  SHMEX_ERROR_SHM_OPEN,
+  SHMEX_ERROR_FTRUNCATE,
+  SHMEX_ERROR_MMAP,
+  SHMEX_ERROR_SHM_MAPPED
 } ShmexLibResult;
 
 typedef struct _ShmexGuard {

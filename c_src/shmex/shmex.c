@@ -19,7 +19,7 @@ static ERL_NIF_TERM export_allocate(ErlNifEnv* env, int argc, const ERL_NIF_TERM
 
   ShmexLibResult result = shmex_allocate(&payload);
 
-  if (shmex_RES_OK == result) {
+  if (SHMEX_RES_OK == result) {
     shmex_add_guard(env, SHMEX_GUARD_RESOURCE_TYPE, &payload);
     return_term = bunch_make_ok_tuple(env, shmex_make_term(env, &payload));
   } else {
@@ -49,7 +49,7 @@ static ERL_NIF_TERM export_set_capacity(ErlNifEnv* env, int argc, const ERL_NIF_
   ERL_NIF_TERM return_term;
 
   ShmexLibResult result = shmex_set_capacity(&payload, capacity);
-  if (shmex_RES_OK == result) {
+  if (SHMEX_RES_OK == result) {
     return_term = bunch_make_ok_tuple(env, shmex_make_term(env, &payload));
   } else {
     return_term = shmex_make_error_term(env, result);
@@ -70,7 +70,7 @@ static ERL_NIF_TERM export_read(ErlNifEnv* env, int argc, const ERL_NIF_TERM arg
   }
 
   ShmexLibResult result = shmex_open_and_mmap(&payload);
-  if (shmex_RES_OK != result) {
+  if (SHMEX_RES_OK != result) {
     return_term = shmex_make_error_term(env, result);
     goto exit_read;
   }
@@ -96,7 +96,7 @@ static ERL_NIF_TERM export_write(ErlNifEnv* env, int argc, const ERL_NIF_TERM ar
   }
 
   ShmexLibResult result = shmex_open_and_mmap(&payload);
-  if (shmex_RES_OK != result) {
+  if (SHMEX_RES_OK != result) {
     return_term = shmex_make_error_term(env, result);
     goto exit_write;
   }
@@ -120,7 +120,7 @@ static ERL_NIF_TERM export_split_at(ErlNifEnv* env, int argc, const ERL_NIF_TERM
   int new_fd = -1;
 
   ShmexLibResult result = shmex_open_and_mmap(&old_payload);
-  if (shmex_RES_OK != result) {
+  if (SHMEX_RES_OK != result) {
     return_term = shmex_make_error_term(env, result);
     goto exit_split_at;
   }
@@ -131,13 +131,13 @@ static ERL_NIF_TERM export_split_at(ErlNifEnv* env, int argc, const ERL_NIF_TERM
 
   result = shmex_allocate(&new_payload);
   shmex_add_guard(env, SHMEX_GUARD_RESOURCE_TYPE, &new_payload);
-  if (shmex_RES_OK != result) {
+  if (SHMEX_RES_OK != result) {
     return_term = shmex_make_error_term(env, result);
     goto exit_split_at;
   }
 
   result = shmex_open_and_mmap(&new_payload);
-  if (shmex_RES_OK != result) {
+  if (SHMEX_RES_OK != result) {
     return_term = shmex_make_error_term(env, result);
     goto exit_split_at;
   }
@@ -172,7 +172,7 @@ static ERL_NIF_TERM export_trim_leading(ErlNifEnv* env, int argc, const ERL_NIF_
   ShmexLibResult result;
 
   result = shmex_open_and_mmap(&payload);
-  if (shmex_RES_OK != result) {
+  if (SHMEX_RES_OK != result) {
     return_term = shmex_make_error_term(env, result);
     goto exit_trim_leading;
   }
@@ -195,19 +195,19 @@ static ERL_NIF_TERM export_concat(ErlNifEnv* env, int argc, const ERL_NIF_TERM a
 
   size_t new_capacity = left.size + right.size;
   result = shmex_set_capacity(&left, new_capacity);
-  if (shmex_RES_OK != result) {
+  if (SHMEX_RES_OK != result) {
     return_term = shmex_make_error_term(env, result);
     goto exit_concat;
   }
 
   result = shmex_open_and_mmap(&left);
-  if (shmex_RES_OK != result) {
+  if (SHMEX_RES_OK != result) {
     return_term = shmex_make_error_term(env, result);
     goto exit_concat;
   }
 
   result = shmex_open_and_mmap(&right);
-  if (shmex_RES_OK != result) {
+  if (SHMEX_RES_OK != result) {
     return_term = shmex_make_error_term(env, result);
     goto exit_concat;
   }

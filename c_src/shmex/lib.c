@@ -151,7 +151,7 @@ ShmexLibResult shmex_allocate(Shmex * payload) {
   while (fd < 0) {
     attempts--;
     if (errno != EEXIST || attempts <= 0) {
-      result = shmex_ERROR_SHM_OPEN;
+      result = SHMEX_ERROR_SHM_OPEN;
       goto shmex_create_exit;
     }
     shmex_generate_name(payload);
@@ -160,11 +160,11 @@ ShmexLibResult shmex_allocate(Shmex * payload) {
 
   int ftr_res = ftruncate(fd, payload->capacity);
   if (ftr_res < 0) {
-    result = shmex_ERROR_FTRUNCATE;
+    result = SHMEX_ERROR_FTRUNCATE;
     goto shmex_create_exit;
   }
 
-  result = shmex_RES_OK;
+  result = SHMEX_RES_OK;
 shmex_create_exit:
   if (fd > 0) {
     close(fd);
@@ -226,15 +226,15 @@ ERL_NIF_TERM shmex_make_term(ErlNifEnv * env, Shmex * payload) {
  */
 ERL_NIF_TERM shmex_make_error_term(ErlNifEnv * env, ShmexLibResult result) {
   switch (result) {
-    case shmex_RES_OK:
+    case SHMEX_RES_OK:
       return bunch_make_error_internal(env, "ok_is_not_error");
-    case shmex_ERROR_SHM_OPEN:
+    case SHMEX_ERROR_SHM_OPEN:
       return bunch_make_error_errno(env, "shm_open");
-    case shmex_ERROR_FTRUNCATE:
+    case SHMEX_ERROR_FTRUNCATE:
       return bunch_make_error_errno(env, "ftruncate");
-    case shmex_ERROR_MMAP:
+    case SHMEX_ERROR_MMAP:
       return bunch_make_error_errno(env, "mmap");
-    case shmex_ERROR_SHM_MAPPED:
+    case SHMEX_ERROR_SHM_MAPPED:
       return bunch_make_error_internal(env, "shm_is_mapped");
     default:
       return bunch_make_error_internal(env, "unknown_error");
@@ -251,19 +251,19 @@ ShmexLibResult shmex_set_capacity(Shmex * payload, size_t capacity) {
   int fd = -1;
 
   if (payload->mapped_memory != MAP_FAILED) {
-    result = shmex_ERROR_SHM_MAPPED;
+    result = SHMEX_ERROR_SHM_MAPPED;
     goto shmex_set_capacity_exit;
   }
 
   fd = shm_open(payload->name, O_RDWR, 0666);
   if (fd < 0) {
-    result = shmex_ERROR_SHM_OPEN;
+    result = SHMEX_ERROR_SHM_OPEN;
     goto shmex_set_capacity_exit;
   }
 
   int res = ftruncate(fd, capacity);
   if (res < 0) {
-    result = shmex_ERROR_FTRUNCATE;
+    result = SHMEX_ERROR_FTRUNCATE;
     goto shmex_set_capacity_exit;
   }
   payload->capacity = capacity;
@@ -271,7 +271,7 @@ ShmexLibResult shmex_set_capacity(Shmex * payload, size_t capacity) {
     // data was discarded with ftruncate, update size
     payload->size = capacity;
   }
-  result = shmex_RES_OK;
+  result = SHMEX_RES_OK;
 shmex_set_capacity_exit:
   if (fd > 0) {
     close(fd);
@@ -295,17 +295,17 @@ ShmexLibResult shmex_open_and_mmap(Shmex * payload) {
 
   fd = shm_open(payload->name, O_RDWR, 0666);
   if (fd < 0) {
-    result = shmex_ERROR_SHM_OPEN;
+    result = SHMEX_ERROR_SHM_OPEN;
     goto shmex_open_and_mmap_exit;
   }
 
   payload->mapped_memory = mmap(NULL, payload->capacity, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   if (MAP_FAILED == payload->mapped_memory) {
-    result = shmex_ERROR_MMAP;
+    result = SHMEX_ERROR_MMAP;
     goto shmex_open_and_mmap_exit;
   }
 
-  result = shmex_RES_OK;
+  result = SHMEX_RES_OK;
 shmex_open_and_mmap_exit:
   if (fd > 0) {
     close(fd);
