@@ -15,8 +15,8 @@ defmodule Shmex.Native do
   the shared memory is unlinked and will disappear from the system when last process
   using it unmaps it
   """
-  @spec allocate(payload :: Shmex.t()) :: Type.try_t(Shmex.t())
-  defnif allocate(payload)
+  @spec allocate(shm :: Shmex.t()) :: Type.try_t(Shmex.t())
+  defnif allocate(shm)
 
   @doc """
   Creates guard for existing shared memory.
@@ -28,65 +28,82 @@ defmodule Shmex.Native do
   See also docs for `allocate/1`
   """
   @spec add_guard(Shmex.t()) :: Type.try_t(Shmex.t())
-  defnif add_guard(payload)
+  defnif add_guard(shm)
 
   @doc """
-  Sets the capacity of SHM and updates the struct accordingly
+  Sets the capacity of shared memory area and updates the Shmex struct accordingly.
   """
-  @spec set_capacity(payload :: Shmex.t(), capacity :: pos_integer()) :: Type.try_t(Shmex.t())
-  defnif set_capacity(payload, capacity)
+  @spec set_capacity(shm :: Shmex.t(), capacity :: pos_integer()) :: Type.try_t(Shmex.t())
+  defnif set_capacity(shm, capacity)
 
   @doc """
-  Reads the contents of SHM and returns as binary
+  Reads the contents of shared memory and returns it as a binary.
   """
-  @spec read(payload :: Shmex.t()) :: Type.try_t(binary())
-  def read(%Shmex{size: size} = payload) do
-    read(payload, size)
+  @spec read(shm :: Shmex.t()) :: Type.try_t(binary())
+  def read(%Shmex{size: size} = shm) do
+    read(shm, size)
   end
 
   @doc """
-  Reads `cnt` bytes from SHM and returns as binary
+  Reads `cnt` bytes from the shared memory and returns it as a binary.
 
-  `cnt` should not be greater than `payload.size`
+  `cnt` should not be greater than `shm.size`
   """
-  @spec read(payload :: Shmex.t(), cnt :: non_neg_integer()) :: Type.try_t(binary())
-  defnif read(payload, cnt)
+  @spec read(shm :: Shmex.t(), cnt :: non_neg_integer()) :: Type.try_t(binary())
+  defnif read(shm, cnt)
 
   @doc """
-  Writes the binary into the SHM.
+  Writes the binary into the shared memory.
 
-  Overwrites existing content. Increases capacity to fit the data.
+  Overwrites the existing content. Increases the capacity of shared memory
+  to fit the data.
   """
-  @spec write(payload :: Shmex.t(), data :: binary()) :: Type.try_t(Shmex.t())
-  defnif write(payload, data)
+  @spec write(shm :: Shmex.t(), data :: binary()) :: Type.try_t(Shmex.t())
+  defnif write(shm, data)
 
   @doc """
-  Splits the contents of SHM into 2 by moving part of the data into a new SHM
+  Splits the contents of shared memory area into 2 by moving part of the data into
+  a new shared memory
 
-  `payload` has to be an existing shm (obtained via `allocate/1`).
+  `shm` has to be an existing shared memory (obtained via `allocate/1`).
 
-  It virtually trims the existing SHM to `position` bytes by setting `size` to `position`
-  (The actual data is still present) and the overlapping data is copied into the new SHM.
+  It virtually trims the existing shared memory to `position` bytes
+  by setting `size` to `position` (The actual data is still present)
+  and the overlapping data is copied into the new shared memory area.
   """
-  @spec split_at(payload :: Shmex.t(), position :: non_neg_integer()) ::
+  @spec split_at(shm :: Shmex.t(), position :: non_neg_integer()) ::
           Type.try_t({Shmex.t(), Shmex.t()})
-  defnif split_at(payload, position)
+  defnif split_at(shm, position)
 
-  @spec concat(left :: Shmex.t(), right :: Shmex.t()) :: Type.try_t(Shmex.t())
-  defnif concat(left, right)
+  @doc """
+  Concatenates the contents of shared memory area at the end of another.
 
-  @spec trim(payload :: Shmex.t()) :: Type.try_t()
+  The first shared memory is a target that will contain data from both shared memory areas.
+  Its capacity will be set to the sum of sizes of both shared memory areas.
+  The second, the source will remain unmodified.
+  """
+  @spec concat(target :: Shmex.t(), source :: Shmex.t()) :: Type.try_t(Shmex.t())
+  defnif concat(target, source)
+
+  @doc """
+  Trims shared memory capacity to match its size.
+  """
+  @spec trim(shm :: Shmex.t()) :: Type.try_t()
   def trim(%Shmex{size: size} = shm) do
     shm |> set_capacity(size)
   end
 
-  @spec trim(payload :: Shmex.t(), bytes :: non_neg_integer) :: Type.try_t()
-  def trim(payload, bytes) do
-    with {:ok, trimmed_front} <- trim_leading(payload, bytes),
+  @doc """
+  Drops `bytes` bytes from the beggining of shared memory area and
+  trims it to match the new size.
+  """
+  @spec trim(shm :: Shmex.t(), bytes :: non_neg_integer) :: Type.try_t()
+  def trim(shm, bytes) do
+    with {:ok, trimmed_front} <- trim_leading(shm, bytes),
          {:ok, result} <- trim(trimmed_front) do
       {:ok, result}
     end
   end
 
-  defnifp trim_leading(payload, offset)
+  defnifp trim_leading(shm, offset)
 end
