@@ -1,6 +1,6 @@
 defmodule Shmex do
   @moduledoc """
-  This module allows using payload placed in POSIX shared memory on POSIX
+  This module allows using data placed in POSIX shared memory on POSIX
   compliant systems.
 
   Defines a struct representing the actual shared memory object. The struct
@@ -10,7 +10,7 @@ defmodule Shmex do
   alias __MODULE__.Native
 
   @typedoc """
-  Struct describing payload kept in shared memory. Should not be modified
+  Struct describing data kept in shared memory. Should not be modified
   and should always be passed around as a whole
 
   ...including passing to the native code - there are functions in `:shmex_lib`
@@ -30,16 +30,16 @@ defmodule Shmex do
   defstruct name: nil, guard: nil, size: 0, capacity: 4096
 
   @doc """
-  Creates a new, empty Shm payload with the given capacity
+  Creates a new, empty shared memory area with the given capacity
   """
   @spec empty(capacity :: pos_integer) :: t()
   def empty(capacity \\ 4096) do
-    {:ok, payload} = create(capacity)
-    payload
+    {:ok, data} = create(capacity)
+    data
   end
 
   @doc """
-  Creates a new Shm payload from existing data.
+  Creates a new shared memory area filled with the existing data.
   """
   @spec new(binary()) :: t()
   def new(data) when is_binary(data) do
@@ -47,26 +47,26 @@ defmodule Shmex do
   end
 
   @doc """
-  Creates a new Shm payload initialized with `data` and set capacity.
+  Creates a new shared memory area initialized with `data` and sets its capacity.
 
   The actual capacity is the greater of passed capacity and data size
   """
   @spec new(data :: binary(), capacity :: pos_integer()) :: t()
   def new(data, capacity) when capacity > 0 do
-    {:ok, payload} = create(capacity)
-    {:ok, payload} = Native.write(payload, data)
-    payload
+    {:ok, shm} = create(capacity)
+    {:ok, shm} = Native.write(shm, data)
+    shm
   end
 
   @doc """
-  Sets the capacity of SHM.
+  Sets the capacity of shared memory area.
 
   If the capacity is smaller than the current size, data will be discarded and size modified
   """
   @spec set_capacity(t(), pos_integer()) :: t()
-  def set_capacity(payload, capacity) do
-    {:ok, new_payload} = Native.set_capacity(payload, capacity)
-    new_payload
+  def set_capacity(shm, capacity) do
+    {:ok, new_shm} = Native.set_capacity(shm, capacity)
+    new_shm
   end
 
   defp create(capacity) do
