@@ -62,8 +62,8 @@ defmodule Shmex.Native do
   defnif write(shm, data)
 
   @doc """
-  Splits the contents of shared memory area into 2 by moving part of the data into
-  a new shared memory
+  Splits the contents of shared memory area into two by moving the data past
+  the specified position into a new shared memory.
 
   `shm` has to be an existing shared memory (obtained via `allocate/1`).
 
@@ -76,11 +76,12 @@ defmodule Shmex.Native do
   defnif split_at(shm, position)
 
   @doc """
-  Concatenates the contents of shared memory area at the end of another.
+  Concatenates two shared memory areas by copying the data from the second
+  at the end of the first one.
 
   The first shared memory is a target that will contain data from both shared memory areas.
   Its capacity will be set to the sum of sizes of both shared memory areas.
-  The second, the source will remain unmodified.
+  The second one, the source, will remain unmodified.
   """
   @spec concat(target :: Shmex.t(), source :: Shmex.t()) :: Type.try_t(Shmex.t())
   defnif concat(target, source)

@@ -47,7 +47,7 @@ defmodule Shmex do
   end
 
   @doc """
-  Creates a new shared memory area initialized with `data` and set capacity.
+  Creates a new shared memory area initialized with `data` and sets its capacity.
 
   The actual capacity is the greater of passed capacity and data size
   """
