@@ -3,16 +3,10 @@
 #define NAME_MAX 255
 #define _POSIX_C_SOURCE 200809L
 
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 #include <erl_nif.h>
 #include <bunch/bunch.h>
-#include <string.h>
-#include <unistd.h>
 #include <sys/types.h>
-#include <time.h>
-#include <stdio.h>
+#include <stddef.h>
 
 typedef struct {
   char * name;

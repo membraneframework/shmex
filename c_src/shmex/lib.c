@@ -1,4 +1,11 @@
 #include "lib.h"
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <string.h>
+#include <unistd.h>
+#include <time.h>
+#include <stdio.h>
 
 void shmex_generate_name(Shmex * payload) {
   static const unsigned GENERATED_NAME_SIZE = strlen(SHM_NAME_PREFIX) + 21;
