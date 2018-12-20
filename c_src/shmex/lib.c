@@ -1,3 +1,6 @@
+// feature test macro for clock_gettime and ftruncate
+#define _POSIX_C_SOURCE 200809L
+
 #include "lib.h"
 #include <sys/mman.h>
 #include <sys/stat.h>

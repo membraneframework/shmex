@@ -1,7 +1,6 @@
 #pragma once
 
 #define NAME_MAX 255
-#define _POSIX_C_SOURCE 200809L
 
 #include <erl_nif.h>
 #include <bunch/bunch.h>
