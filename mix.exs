@@ -1,7 +1,7 @@
 defmodule Shmex.Mixfile do
   use Mix.Project
 
-  @version "0.1.2"
+  @version "0.1.3"
   @github_url "https://github.com/membraneframework/shmex"
 
   def project do
