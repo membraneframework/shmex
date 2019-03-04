@@ -4,8 +4,10 @@ defmodule Shmex.Native do
   operations on Posix shared memory. Use with caution!
   """
 
-  alias Bunch.Type
   use Bundlex.Loader, nif: :shmex
+
+  @type try_t() :: :ok | {:error, reason :: any()}
+  @type try_t(result) :: {:ok, result} | {:error, reason :: any()}
 
   @doc """
   Creates shared memory segment and adds a guard for it.
@@ -15,7 +17,7 @@ defmodule Shmex.Native do
   the shared memory is unlinked and will disappear from the system when last process
   using it unmaps it
   """
-  @spec allocate(shm :: Shmex.t()) :: Type.try_t(Shmex.t())
+  @spec allocate(shm :: Shmex.t()) :: try_t(Shmex.t())
   defnif allocate(shm)
 
   @doc """
@@ -27,19 +29,19 @@ defmodule Shmex.Native do
 
   See also docs for `allocate/1`
   """
-  @spec add_guard(Shmex.t()) :: Type.try_t(Shmex.t())
+  @spec add_guard(Shmex.t()) :: try_t(Shmex.t())
   defnif add_guard(shm)
 
   @doc """
   Sets the capacity of shared memory area and updates the Shmex struct accordingly.
   """
-  @spec set_capacity(shm :: Shmex.t(), capacity :: pos_integer()) :: Type.try_t(Shmex.t())
+  @spec set_capacity(shm :: Shmex.t(), capacity :: pos_integer()) :: try_t(Shmex.t())
   defnif set_capacity(shm, capacity)
 
   @doc """
   Reads the contents of shared memory and returns it as a binary.
   """
-  @spec read(shm :: Shmex.t()) :: Type.try_t(binary())
+  @spec read(shm :: Shmex.t()) :: try_t(binary())
   def read(%Shmex{size: size} = shm) do
     read(shm, size)
   end
@@ -49,7 +51,7 @@ defmodule Shmex.Native do
 
   `cnt` should not be greater than `shm.size`
   """
-  @spec read(shm :: Shmex.t(), cnt :: non_neg_integer()) :: Type.try_t(binary())
+  @spec read(shm :: Shmex.t(), cnt :: non_neg_integer()) :: try_t(binary())
   defnif read(shm, cnt)
 
   @doc """
@@ -58,7 +60,7 @@ defmodule Shmex.Native do
   Overwrites the existing content. Increases the capacity of shared memory
   to fit the data.
   """
-  @spec write(shm :: Shmex.t(), data :: binary()) :: Type.try_t(Shmex.t())
+  @spec write(shm :: Shmex.t(), data :: binary()) :: try_t(Shmex.t())
   defnif write(shm, data)
 
   @doc """
@@ -72,7 +74,7 @@ defmodule Shmex.Native do
   and the overlapping data is copied into the new shared memory area.
   """
   @spec split_at(shm :: Shmex.t(), position :: non_neg_integer()) ::
-          Type.try_t({Shmex.t(), Shmex.t()})
+          try_t({Shmex.t(), Shmex.t()})
   defnif split_at(shm, position)
 
   @doc """
@@ -83,13 +85,13 @@ defmodule Shmex.Native do
   Its capacity will be set to the sum of sizes of both shared memory areas.
   The second one, the source, will remain unmodified.
   """
-  @spec concat(target :: Shmex.t(), source :: Shmex.t()) :: Type.try_t(Shmex.t())
+  @spec concat(target :: Shmex.t(), source :: Shmex.t()) :: try_t(Shmex.t())
   defnif concat(target, source)
 
   @doc """
   Trims shared memory capacity to match its size.
   """
-  @spec trim(shm :: Shmex.t()) :: Type.try_t()
+  @spec trim(shm :: Shmex.t()) :: try_t()
   def trim(%Shmex{size: size} = shm) do
     shm |> set_capacity(size)
   end
@@ -98,7 +100,7 @@ defmodule Shmex.Native do
   Drops `bytes` bytes from the beggining of shared memory area and
   trims it to match the new size.
   """
-  @spec trim(shm :: Shmex.t(), bytes :: non_neg_integer) :: Type.try_t()
+  @spec trim(shm :: Shmex.t(), bytes :: non_neg_integer) :: try_t()
   def trim(shm, bytes) do
     with {:ok, trimmed_front} <- trim_leading(shm, bytes),
          {:ok, result} <- trim(trimmed_front) do
