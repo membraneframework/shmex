@@ -73,8 +73,7 @@ defmodule Shmex.Native do
   by setting `size` to `position` (The actual data is still present)
   and the overlapping data is copied into the new shared memory area.
   """
-  @spec split_at(shm :: Shmex.t(), position :: non_neg_integer()) ::
-          try_t({Shmex.t(), Shmex.t()})
+  @spec split_at(shm :: Shmex.t(), position :: non_neg_integer()) :: try_t({Shmex.t(), Shmex.t()})
   defnif split_at(shm, position)
 
   @doc """
