@@ -3,19 +3,24 @@ defmodule Shmex.BundlexProject do
 
   def project do
     [
-      nifs: nifs(Bundlex.platform())
+      nifs: nifs(),
+      libs: libs()
     ]
   end
 
-  defp nifs(_platform) do
+  defp nifs() do
     [
       shmex: [
         deps: [shmex: :lib, bunch_native: :bunch],
         sources: ["shmex.c"]
-      ],
+      ]
+    ]
+  end
+
+  defp libs() do
+    [
       lib: [
         deps: [bunch_native: :bunch],
-        export_only?: Mix.env() != :test,
         sources: ["lib.c"]
       ]
     ]
