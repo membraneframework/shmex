@@ -1,4 +1,16 @@
-#include "shmex.h"
+#define NAME_MAX 255
+#define _POSIX_C_SOURCE 200809L
+
+#include <sys/mman.h>
+#include <sys/stat.h>        /* For mode constants */
+#include <fcntl.h>
+#include <erl_nif.h>
+#include <bunch/bunch.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/types.h>
+
+#include "lib.h"
 
 ErlNifResourceType *SHMEX_GUARD_RESOURCE_TYPE;
 
@@ -186,6 +198,13 @@ exit_trim_leading:
   return return_term;
 }
 
+static ERL_NIF_TERM export_ensure_not_gc(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
+  BUNCH_UNUSED(argc);
+  PARSE_SHMEX_ARG(0, payload);
+  shmex_release(&payload);
+  return bunch_make_ok(env);
+}
+
 static ERL_NIF_TERM export_concat(ErlNifEnv* env, int argc, const ERL_NIF_TERM argv[]) {
   BUNCH_UNUSED(argc);
   PARSE_SHMEX_ARG(0, left);
@@ -229,7 +248,8 @@ static ErlNifFunc nif_funcs[] = {
   {"write", 2, export_write, 0},
   {"split_at", 2, export_split_at, 0},
   {"concat", 2, export_concat, 0},
-  {"trim_leading", 2, export_trim_leading, 0}
+  {"trim_leading", 2, export_trim_leading, 0},
+  {"ensure_not_gc", 1, export_ensure_not_gc, 0}
 };
 
 ERL_NIF_INIT(Elixir.Shmex.Native.Nif, nif_funcs, load, NULL, NULL, NULL)
