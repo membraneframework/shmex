@@ -69,6 +69,18 @@ defmodule Shmex do
     new_shm
   end
 
+  @doc """
+  Ensures that shared memory is not garbage collected at the point of executing
+  this function.
+
+  Useful when passing shared memory to other OS process, to prevent it
+  from being garbage collected until received and mapped by that process.
+  """
+  @spec ensure_not_gc(t()) :: :ok
+  def ensure_not_gc(shm) do
+    :ok = Native.ensure_not_gc(shm)
+  end
+
   defp create(capacity) do
     shm_struct = %__MODULE__{capacity: capacity}
     Native.allocate(shm_struct)
