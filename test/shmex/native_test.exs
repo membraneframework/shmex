@@ -51,8 +51,7 @@ defmodule Shmex.NativeTest do
 
     assert {:ok, stat} = File.stat(@shm_path)
     assert stat.size == new_capacity
-    # Prevent garbage collection of shm
-    assert shm.capacity == new_capacity
+    @module.ensure_not_gc(shm)
   end
 
   describe "write/2" do
@@ -63,16 +62,15 @@ defmodule Shmex.NativeTest do
       capacity = data_size + 10
       assert {:ok, shm} = @module.allocate(%Shmex{name: @shm_name, capacity: capacity})
       assert {:ok, shm} = @module.write(shm, data)
+      assert shm.size == data_size
+      assert shm.capacity == capacity
 
       assert {:ok, stat} = File.stat(@shm_path)
       assert stat.size == capacity
 
       assert <<tested_head::binary-size(data_size), _::binary>> = File.read!(@shm_path)
       assert tested_head == data
-      # There has to be some reference to shm struct here to prevent garbage collection
-      # of shm guard before accessing shm via tmpfs
-      assert shm.size == data_size
-      assert shm.capacity == capacity
+      @module.ensure_not_gc(shm)
     end
 
     test "when written data size is greater than capacity", %{data: data, data_size: data_size} do
@@ -80,13 +78,14 @@ defmodule Shmex.NativeTest do
       assert capacity < data_size
       assert {:ok, shm} = @module.allocate(%Shmex{name: @shm_name, capacity: capacity})
       assert {:ok, shm} = @module.write(shm, data)
+      assert shm.size == data_size
+      assert shm.capacity == data_size
 
       assert {:ok, stat} = File.stat(@shm_path)
       assert stat.size == data_size
 
       assert File.read!(@shm_path) == data
-      assert shm.size == data_size
-      assert shm.capacity == data_size
+      @module.ensure_not_gc(shm)
     end
   end
 
