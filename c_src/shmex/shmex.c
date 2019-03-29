@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#include "lib.h"
+#include <shmex/lib.h>
 
 ErlNifResourceType *SHMEX_GUARD_RESOURCE_TYPE;
 

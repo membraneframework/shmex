@@ -1,6 +1,3 @@
-// feature test macro for clock_gettime and ftruncate
-#define _POSIX_C_SOURCE 200809L
-
 #include "lib.h"
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -10,17 +7,6 @@
 #include <time.h>
 #include <stdio.h>
 
-void shmex_generate_name(Shmex * payload) {
-  static const unsigned GENERATED_NAME_SIZE = strlen(SHM_NAME_PREFIX) + 21;
-  if (payload->name != NULL) {
-    enif_free(payload->name);
-  }
-  payload->name = enif_alloc(GENERATED_NAME_SIZE);
-
-  struct timespec ts;
-  clock_gettime(CLOCK_MONOTONIC, &ts);
-  snprintf(payload->name, GENERATED_NAME_SIZE, SHM_NAME_PREFIX "%.12ld%.8ld", ts.tv_sec, ts.tv_nsec);
-}
 
 /**
  * Initializes Shmex C struct. Should be used before allocating shm from C code.
@@ -32,7 +18,6 @@ void shmex_init(ErlNifEnv * env, Shmex * payload, unsigned capacity) {
   payload->size = 0;
   payload->capacity = capacity;
   payload->mapped_memory = MAP_FAILED;
-  payload->elixir_struct_atom = enif_make_atom(env, SHMEX_ELIXIR_STRUCT_ATOM);
   payload->name = NULL;
 }
 
@@ -66,7 +51,6 @@ void shmex_guard_destructor(ErlNifEnv* env, void * resource) {
  * Each call should be paired with `shmex_release` call to deallocate resources
  */
 int shmex_get_from_term(ErlNifEnv * env, ERL_NIF_TERM struct_term, Shmex *payload) {
-  const ERL_NIF_TERM ATOM_STRUCT_TAG = enif_make_atom(env, "__struct__");
   const ERL_NIF_TERM ATOM_NAME = enif_make_atom(env, "name");
   const ERL_NIF_TERM ATOM_GUARD = enif_make_atom(env, "guard");
   const ERL_NIF_TERM ATOM_SIZE = enif_make_atom(env, "size");
@@ -83,13 +67,6 @@ int shmex_get_from_term(ErlNifEnv * env, ERL_NIF_TERM struct_term, Shmex *payloa
     return 0;
   }
   payload->guard = tmp_term;
-
-  // Get Elixir struct tag
-  result = enif_get_map_value(env, struct_term, ATOM_STRUCT_TAG, &tmp_term);
-  if (!result) {
-    return 0;
-  }
-  payload->elixir_struct_atom = tmp_term;
 
   // Get size
   result = enif_get_map_value(env, struct_term, ATOM_SIZE, &tmp_term);
@@ -132,7 +109,7 @@ int shmex_get_from_term(ErlNifEnv * env, ERL_NIF_TERM struct_term, Shmex *payloa
   if (!result) {
     return 0;
   }
-  payload->name = enif_alloc(name_binary.size + 1);
+  payload->name = malloc(name_binary.size + 1);
   memcpy(payload->name, (char *) name_binary.data, name_binary.size);
   payload->name[name_binary.size] = '\0';
 
@@ -140,57 +117,16 @@ int shmex_get_from_term(ErlNifEnv * env, ERL_NIF_TERM struct_term, Shmex *payloa
 }
 
 /**
- * Allocates POSIX shared memory given the data (name, capacity) in Shmex struct.
- *
- * If name in Shmex is set to NULL, the name will be (re)genrated until
- * the one that haven't been used is found (at most SHMEX_ALLOC_MAX_ATTEMPTS times).
- *
- * Shared memory can be accessed by using 'shmex_open_and_mmap'.
- * Memory will be unmapped when Shmex struct is freed (by 'shmex_release')
- */
-ShmexLibResult shmex_allocate(Shmex * payload) {
-  ShmexLibResult result;
-  int fd = -1;
-
-  int attempts = 1;
-  if (payload->name == NULL) {
-    shmex_generate_name(payload);
-    attempts = SHMEX_ALLOC_MAX_ATTEMPTS;
-  }
-  fd = shm_open(payload->name, O_RDWR | O_CREAT | O_EXCL, 0666);
-  while (fd < 0) {
-    attempts--;
-    if (errno != EEXIST || attempts <= 0) {
-      result = SHMEX_ERROR_SHM_OPEN;
-      goto shmex_create_exit;
-    }
-    shmex_generate_name(payload);
-    fd = shm_open(payload->name, O_RDWR | O_CREAT | O_EXCL, 0666);
-  }
-
-  int ftr_res = ftruncate(fd, payload->capacity);
-  if (ftr_res < 0) {
-    result = SHMEX_ERROR_FTRUNCATE;
-    goto shmex_create_exit;
-  }
-
-  result = SHMEX_RES_OK;
-shmex_create_exit:
-  if (fd > 0) {
-    close(fd);
-  }
-  return result;
-}
-
-/**
  * Deallocates resources owned by Shmex struct. It does not
  * free the actual shared memory segment, just object representing it.
  *
- * If payload was mapped, unmaps it as well.
+ * After calling this function, payload is not usable anymore.
+ * If the payload was mapped, it is unmapped as well.
  */
-void shmex_release(Shmex *payload) {
+void shmex_release(Shmex * payload) {
   if (payload->name != NULL) {
-    enif_free(payload->name);
+    free(payload->name);
+    payload->name = NULL;
   }
 
   shmex_unmap(payload);
@@ -214,7 +150,7 @@ ERL_NIF_TERM shmex_make_term(ErlNifEnv * env, Shmex * payload) {
   memcpy(name_ptr, payload->name, name_len);
 
   ERL_NIF_TERM values[SHMEX_ELIXIR_STRUCT_ENTRIES] = {
-    payload->elixir_struct_atom,
+    enif_make_atom(env, SHMEX_ELIXIR_STRUCT_ATOM),
     name_term,
     payload->guard,
     enif_make_int(env, payload->size),
@@ -246,86 +182,9 @@ ERL_NIF_TERM shmex_make_error_term(ErlNifEnv * env, ShmexLibResult result) {
       return bunch_make_error_errno(env, "mmap");
     case SHMEX_ERROR_SHM_MAPPED:
       return bunch_make_error_internal(env, "shm_is_mapped");
+    case SHMEX_ERROR_INVALID_PAYLOAD:
+      return bunch_make_error_internal(env, "invalid_payload");
     default:
       return bunch_make_error_internal(env, "unknown_error");
   }
-}
-
-/**
- * Sets the capacity of shared memory payload. The struct is updated accordingly.
- *
- * Should not be invoked when shm is mapped into the memory.
- */
-ShmexLibResult shmex_set_capacity(Shmex * payload, size_t capacity) {
-  ShmexLibResult result;
-  int fd = -1;
-
-  if (payload->mapped_memory != MAP_FAILED) {
-    result = SHMEX_ERROR_SHM_MAPPED;
-    goto shmex_set_capacity_exit;
-  }
-
-  fd = shm_open(payload->name, O_RDWR, 0666);
-  if (fd < 0) {
-    result = SHMEX_ERROR_SHM_OPEN;
-    goto shmex_set_capacity_exit;
-  }
-
-  int res = ftruncate(fd, capacity);
-  if (res < 0) {
-    result = SHMEX_ERROR_FTRUNCATE;
-    goto shmex_set_capacity_exit;
-  }
-  payload->capacity = capacity;
-  if (payload->size > capacity) {
-    // data was discarded with ftruncate, update size
-    payload->size = capacity;
-  }
-  result = SHMEX_RES_OK;
-shmex_set_capacity_exit:
-  if (fd > 0) {
-    close(fd);
-  }
-  return result;
-}
-
-/**
- * Maps shared memory into address space of current process (using mmap)
- *
- * On success sets payload->mapped_memory to a valid pointer. On failure it is set to
- * MAP_FAILED ((void *)-1) and returned result indicates which function failed.
- *
- * Mapped memory has to be released with either 'shmex_release' or 'shmex_unmap'.
- *
- * While memory is mapped the capacity of shm must not be modified.
- */
-ShmexLibResult shmex_open_and_mmap(Shmex * payload) {
-  ShmexLibResult result;
-  int fd = -1;
-
-  fd = shm_open(payload->name, O_RDWR, 0666);
-  if (fd < 0) {
-    result = SHMEX_ERROR_SHM_OPEN;
-    goto shmex_open_and_mmap_exit;
-  }
-
-  payload->mapped_memory = mmap(NULL, payload->capacity, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-  if (MAP_FAILED == payload->mapped_memory) {
-    result = SHMEX_ERROR_MMAP;
-    goto shmex_open_and_mmap_exit;
-  }
-
-  result = SHMEX_RES_OK;
-shmex_open_and_mmap_exit:
-  if (fd > 0) {
-    close(fd);
-  }
-  return result;
-}
-
-void shmex_unmap(Shmex * payload) {
-  if (payload->mapped_memory != MAP_FAILED) {
-    munmap(payload->mapped_memory, payload->capacity);
-  }
-  payload->mapped_memory = MAP_FAILED;
 }

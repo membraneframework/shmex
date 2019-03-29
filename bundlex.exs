@@ -21,7 +21,12 @@ defmodule Shmex.BundlexProject do
     [
       lib: [
         deps: [bunch_native: :bunch],
-        sources: ["lib.c"]
+        src_base: "shmex/nif/shmex",
+        sources: ["lib.c", "../../common/lib.c"]
+      ],
+      lib_cnode: [
+        src_base: "shmex/cnode/shmex",
+        sources: ["lib.c", "../../common/lib.c"]
       ]
     ]
   end
