@@ -63,11 +63,24 @@ void shmex_release(Shmex * payload) {
   shmex_unmap(payload);
 }
 
-/**
- * Initializes Shmex C struct using data from Shmex Elixir struct
- *
- * Each call should be paired with `shmex_release` call to deallocate resources
- */
+int shmex_serialize(ei_x_buff *buf, Shmex *payload) {
+  return ei_x_encode_map_header(buf, SHMEX_ELIXIR_STRUCT_ENTRIES)
+    || ei_x_encode_atom(buf, "name")
+    || (payload->name ?
+      ei_x_encode_binary(buf, payload->name, strlen(payload->name))
+      : ei_x_encode_atom(buf, "nil"))
+    || ei_x_encode_atom(buf, "guard")
+    || (payload->guard ?
+      ei_x_encode_ref(buf, payload->guard)
+      : ei_x_encode_atom(buf, "nil"))
+    || ei_x_encode_atom(buf, "size")
+    || ei_x_encode_ulong(buf, (unsigned long)payload->size)
+    || ei_x_encode_atom(buf, "capacity")
+    || ei_x_encode_ulong(buf, (unsigned long)payload->capacity)
+    || ei_x_encode_atom(buf, "__struct__")
+    || ei_x_encode_atom(buf, SHMEX_ELIXIR_STRUCT_ATOM);
+}
+
 int shmex_deserialize(const char* buf, int* idx, Shmex *payload) {
   int map_size;
   if(ei_decode_map_header(buf, idx, &map_size) || map_size != SHMEX_ELIXIR_STRUCT_ENTRIES) {

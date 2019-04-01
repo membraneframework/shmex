@@ -7,5 +7,5 @@
 void shmex_init(Shmex * payload, unsigned capacity);
 int shmex_deserialize(const char* buf, int* idx, Shmex *payload);
 void shmex_release(Shmex *payload);
-// ERL_NIF_TERM shmex_make_term(ErlNifEnv * env, Shmex * payload);
+int shmex_serialize(ei_x_buff *buf, Shmex *payload);
 // ERL_NIF_TERM shmex_make_error_term(ErlNifEnv * env, ShmexLibResult result);
