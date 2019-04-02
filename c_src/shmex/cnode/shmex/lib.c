@@ -8,7 +8,7 @@
 #include <time.h>
 #include <unistd.h>
 
-static int is_nil(const char *buf, int *idx_ptr, int *nil) {
+static int try_decode_nil(const char *buf, int *idx_ptr, int *nil) {
   int idx = *idx_ptr;
   int type, size;
   char atom[4];
@@ -90,16 +90,16 @@ int shmex_deserialize(const char *buf, int *idx, Shmex *payload) {
   shmex_init(payload, 0);
 
   unsigned long tmp_size;
-  int nil;
+  int is_nil;
 
   for (int i = 0; i < SHMEX_ELIXIR_STRUCT_ENTRIES; i++) {
     char key[NAME_MAX];
     ei_decode_atom(buf, idx, key);
     if (!strcmp(key, "name")) {
-      if (is_nil(buf, idx, &nil)) {
+      if (try_decode_nil(buf, idx, &is_nil)) {
         goto shmex_deserialize_error;
       }
-      if (!nil) {
+      if (!is_nil) {
         char name[NAME_MAX];
         long name_len;
         if (ei_decode_binary(buf, idx, name, &name_len)) {
@@ -109,10 +109,10 @@ int shmex_deserialize(const char *buf, int *idx, Shmex *payload) {
         snprintf(payload->name, name_len + 1, "%s", name);
       }
     } else if (!strcmp(key, "guard")) {
-      if (is_nil(buf, idx, &nil)) {
+      if (try_decode_nil(buf, idx, &is_nil)) {
         goto shmex_deserialize_error;
       }
-      if (!nil) {
+      if (!is_nil) {
         payload->guard = malloc(sizeof(erlang_ref));
         if (ei_decode_ref(buf, idx, payload->guard)) {
           goto shmex_deserialize_error;
