@@ -1,5 +1,3 @@
-#include "lib.h"
-
 // feature test macro for clock_gettime and ftruncate
 #define _POSIX_C_SOURCE 200809L
 
@@ -11,6 +9,8 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+
+#include "lib.h"
 
 #ifdef SHMEX_NIF
 #define ALLOC(X) enif_alloc(X)
