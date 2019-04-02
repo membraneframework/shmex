@@ -3,14 +3,14 @@
 // feature test macro for clock_gettime and ftruncate
 #define _POSIX_C_SOURCE 200809L
 
+#include <errno.h>
+#include <fcntl.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
 #include <time.h>
-#include <stdio.h>
-#include <errno.h>
+#include <unistd.h>
 
 #ifdef SHMEX_NIF
 #define ALLOC(X) enif_alloc(X)
@@ -20,7 +20,7 @@
 #define FREE(X) free(X)
 #endif
 
-void shmex_generate_name(Shmex * payload) {
+void shmex_generate_name(Shmex *payload) {
   static const unsigned GENERATED_NAME_SIZE = strlen(SHM_NAME_PREFIX) + 21;
   if (payload->name != NULL) {
     FREE(payload->name);
@@ -29,20 +29,22 @@ void shmex_generate_name(Shmex * payload) {
 
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
-  snprintf(payload->name, GENERATED_NAME_SIZE, SHM_NAME_PREFIX "%.12ld%.8ld", ts.tv_sec, ts.tv_nsec);
+  snprintf(payload->name, GENERATED_NAME_SIZE, SHM_NAME_PREFIX "%.12ld%.8ld",
+           ts.tv_sec, ts.tv_nsec);
 }
 
-
 /**
- * Allocates POSIX shared memory given the data (name, capacity) in Shmex struct.
+ * Allocates POSIX shared memory given the data (name, capacity) in Shmex
+ * struct.
  *
  * If name in Shmex is set to NULL, the name will be (re)genrated until
- * the one that haven't been used is found (at most SHMEX_ALLOC_MAX_ATTEMPTS times).
+ * the one that haven't been used is found (at most SHMEX_ALLOC_MAX_ATTEMPTS
+ * times).
  *
  * Shared memory can be accessed by using 'shmex_open_and_mmap'.
  * Memory will be unmapped when Shmex struct is freed (by 'shmex_release')
  */
-ShmexLibResult shmex_allocate(Shmex * payload) {
+ShmexLibResult shmex_allocate(Shmex *payload) {
   ShmexLibResult result;
   int fd = -1;
 
@@ -79,14 +81,16 @@ shmex_create_exit:
 /**
  * Maps shared memory into address space of current process (using mmap)
  *
- * On success sets payload->mapped_memory to a valid pointer. On failure it is set to
- * MAP_FAILED ((void *)-1) and returned result indicates which function failed.
+ * On success sets payload->mapped_memory to a valid pointer. On failure it is
+ * set to MAP_FAILED ((void *)-1) and returned result indicates which function
+ * failed.
  *
- * Mapped memory has to be released with either 'shmex_release' or 'shmex_unmap'.
+ * Mapped memory has to be released with either 'shmex_release' or
+ * 'shmex_unmap'.
  *
  * While memory is mapped the capacity of shm must not be modified.
  */
-ShmexLibResult shmex_open_and_mmap(Shmex * payload) {
+ShmexLibResult shmex_open_and_mmap(Shmex *payload) {
   ShmexLibResult result;
   int fd = -1;
 
@@ -96,7 +100,8 @@ ShmexLibResult shmex_open_and_mmap(Shmex * payload) {
     goto shmex_open_and_mmap_exit;
   }
 
-  payload->mapped_memory = mmap(NULL, payload->capacity, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+  payload->mapped_memory =
+      mmap(NULL, payload->capacity, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
   if (MAP_FAILED == payload->mapped_memory) {
     result = SHMEX_ERROR_MMAP;
     goto shmex_open_and_mmap_exit;
@@ -110,7 +115,7 @@ shmex_open_and_mmap_exit:
   return result;
 }
 
-void shmex_unmap(Shmex * payload) {
+void shmex_unmap(Shmex *payload) {
   if (payload->mapped_memory != MAP_FAILED) {
     munmap(payload->mapped_memory, payload->capacity);
   }
@@ -118,11 +123,12 @@ void shmex_unmap(Shmex * payload) {
 }
 
 /**
- * Sets the capacity of shared memory payload. The struct is updated accordingly.
+ * Sets the capacity of shared memory payload. The struct is updated
+ * accordingly.
  *
  * Should not be invoked when shm is mapped into the memory.
  */
-ShmexLibResult shmex_set_capacity(Shmex * payload, size_t capacity) {
+ShmexLibResult shmex_set_capacity(Shmex *payload, size_t capacity) {
   ShmexLibResult result;
   int fd = -1;
 
@@ -160,7 +166,7 @@ shmex_set_capacity_exit:
  * freed once all its memory mappings are removed (e.g. via `shmex_release`
  * function). This function has to be called **before** `shmex_release`.
  */
-ShmexLibResult shmex_unlink(Shmex * payload) {
+ShmexLibResult shmex_unlink(Shmex *payload) {
   if (payload->name != NULL) {
     shm_unlink(payload->name);
     return SHMEX_RES_OK;

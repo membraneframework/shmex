@@ -1,28 +1,28 @@
 #include "lib.h"
 
+#include <fcntl.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
 #include <time.h>
-#include <stdio.h>
+#include <unistd.h>
 
-static int is_nil(const char* buf, int* idx_ptr, int* nil) {
+static int is_nil(const char *buf, int *idx_ptr, int *nil) {
   int idx = *idx_ptr;
   int type, size;
   char atom[4];
-  if(ei_get_type(buf, &idx, &type, &size)) {
+  if (ei_get_type(buf, &idx, &type, &size)) {
     return 1;
   }
-  if(type != 'd' || size != 3) {
+  if (type != 'd' || size != 3) {
     *nil = 0;
     return 0;
   }
-  if(ei_decode_atom(buf, &idx, atom)) {
+  if (ei_decode_atom(buf, &idx, atom)) {
     return 1;
   }
-  if(!strcmp(atom, "nil")) {
+  if (!strcmp(atom, "nil")) {
     *nil = 1;
     *idx_ptr = idx;
   } else {
@@ -36,7 +36,7 @@ static int is_nil(const char* buf, int* idx_ptr, int* nil) {
  *
  * Each call should be paired with `shmex_release` call to deallocate resources.
  */
-void shmex_init(Shmex * payload, unsigned capacity) {
+void shmex_init(Shmex *payload, unsigned capacity) {
   payload->size = 0;
   payload->capacity = capacity;
   payload->mapped_memory = MAP_FAILED;
@@ -51,12 +51,12 @@ void shmex_init(Shmex * payload, unsigned capacity) {
  * After calling this function, payload is not usable anymore.
  * If the payload was mapped, it is unmapped as well.
  */
-void shmex_release(Shmex * payload) {
-  if(payload->name != NULL) {
+void shmex_release(Shmex *payload) {
+  if (payload->name != NULL) {
     free(payload->name);
     payload->name = NULL;
   }
-  if(payload->guard != NULL) {
+  if (payload->guard != NULL) {
     free(payload->guard);
     payload->guard = NULL;
   }
@@ -64,26 +64,26 @@ void shmex_release(Shmex * payload) {
 }
 
 int shmex_serialize(ei_x_buff *buf, Shmex *payload) {
-  return ei_x_encode_map_header(buf, SHMEX_ELIXIR_STRUCT_ENTRIES)
-    || ei_x_encode_atom(buf, "name")
-    || (payload->name ?
-      ei_x_encode_binary(buf, payload->name, strlen(payload->name))
-      : ei_x_encode_atom(buf, "nil"))
-    || ei_x_encode_atom(buf, "guard")
-    || (payload->guard ?
-      ei_x_encode_ref(buf, payload->guard)
-      : ei_x_encode_atom(buf, "nil"))
-    || ei_x_encode_atom(buf, "size")
-    || ei_x_encode_ulong(buf, (unsigned long)payload->size)
-    || ei_x_encode_atom(buf, "capacity")
-    || ei_x_encode_ulong(buf, (unsigned long)payload->capacity)
-    || ei_x_encode_atom(buf, "__struct__")
-    || ei_x_encode_atom(buf, SHMEX_ELIXIR_STRUCT_ATOM);
+  return ei_x_encode_map_header(buf, SHMEX_ELIXIR_STRUCT_ENTRIES) ||
+         ei_x_encode_atom(buf, "name") ||
+         (payload->name
+              ? ei_x_encode_binary(buf, payload->name, strlen(payload->name))
+              : ei_x_encode_atom(buf, "nil")) ||
+         ei_x_encode_atom(buf, "guard") ||
+         (payload->guard ? ei_x_encode_ref(buf, payload->guard)
+                         : ei_x_encode_atom(buf, "nil")) ||
+         ei_x_encode_atom(buf, "size") ||
+         ei_x_encode_ulong(buf, (unsigned long)payload->size) ||
+         ei_x_encode_atom(buf, "capacity") ||
+         ei_x_encode_ulong(buf, (unsigned long)payload->capacity) ||
+         ei_x_encode_atom(buf, "__struct__") ||
+         ei_x_encode_atom(buf, SHMEX_ELIXIR_STRUCT_ATOM);
 }
 
-int shmex_deserialize(const char* buf, int* idx, Shmex *payload) {
+int shmex_deserialize(const char *buf, int *idx, Shmex *payload) {
   int map_size;
-  if(ei_decode_map_header(buf, idx, &map_size) || map_size != SHMEX_ELIXIR_STRUCT_ENTRIES) {
+  if (ei_decode_map_header(buf, idx, &map_size) ||
+      map_size != SHMEX_ELIXIR_STRUCT_ENTRIES) {
     return 0;
   }
 
@@ -92,45 +92,46 @@ int shmex_deserialize(const char* buf, int* idx, Shmex *payload) {
   unsigned long tmp_size;
   int nil;
 
-  for(int i = 0; i < SHMEX_ELIXIR_STRUCT_ENTRIES; i++) {
+  for (int i = 0; i < SHMEX_ELIXIR_STRUCT_ENTRIES; i++) {
     char key[NAME_MAX];
     ei_decode_atom(buf, idx, key);
-    if(!strcmp(key, "name")) {
-      if(is_nil(buf, idx, &nil)) {
+    if (!strcmp(key, "name")) {
+      if (is_nil(buf, idx, &nil)) {
         goto shmex_deserialize_error;
       }
-      if(!nil) {
+      if (!nil) {
         char name[NAME_MAX];
         long name_len;
-        if(ei_decode_binary(buf, idx, name, &name_len)) {
+        if (ei_decode_binary(buf, idx, name, &name_len)) {
           goto shmex_deserialize_error;
         }
         payload->name = malloc(name_len + 1);
-        snprintf(payload->name, name_len + 1 , "%s", name);
+        snprintf(payload->name, name_len + 1, "%s", name);
       }
-    } else if(!strcmp(key, "guard")) {
-      if(is_nil(buf, idx, &nil)) {
+    } else if (!strcmp(key, "guard")) {
+      if (is_nil(buf, idx, &nil)) {
         goto shmex_deserialize_error;
       }
-      if(!nil) {
+      if (!nil) {
         payload->guard = malloc(sizeof(erlang_ref));
-        if(ei_decode_ref(buf, idx, payload->guard)) {
+        if (ei_decode_ref(buf, idx, payload->guard)) {
           goto shmex_deserialize_error;
         }
       }
-    } else if(!strcmp(key, "size")) {
-      if(ei_decode_ulong(buf, idx, &tmp_size)) {
+    } else if (!strcmp(key, "size")) {
+      if (ei_decode_ulong(buf, idx, &tmp_size)) {
         goto shmex_deserialize_error;
       }
       payload->size = (int)tmp_size;
-    } else if(!strcmp(key, "capacity")) {
-      if(ei_decode_ulong(buf, idx, &tmp_size)) {
+    } else if (!strcmp(key, "capacity")) {
+      if (ei_decode_ulong(buf, idx, &tmp_size)) {
         goto shmex_deserialize_error;
       }
       payload->capacity = (int)tmp_size;
-    } else if(!strcmp(key, "__struct__")) {
+    } else if (!strcmp(key, "__struct__")) {
       char struct_name[NAME_MAX];
-      if(ei_decode_atom(buf, idx, struct_name) || strcmp(struct_name, SHMEX_ELIXIR_STRUCT_ATOM)) {
+      if (ei_decode_atom(buf, idx, struct_name) ||
+          strcmp(struct_name, SHMEX_ELIXIR_STRUCT_ATOM)) {
         goto shmex_deserialize_error;
       }
     } else {

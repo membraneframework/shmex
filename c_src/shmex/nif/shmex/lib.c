@@ -1,19 +1,18 @@
 #include "lib.h"
+#include <fcntl.h>
+#include <stdio.h>
+#include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
 #include <time.h>
-#include <stdio.h>
-
+#include <unistd.h>
 
 /**
  * Initializes Shmex C struct. Should be used before allocating shm from C code.
  *
  * Each call should be paired with `shmex_release` call to deallocate resources.
  */
-void shmex_init(ErlNifEnv * env, Shmex * payload, unsigned capacity) {
+void shmex_init(ErlNifEnv *env, Shmex *payload, unsigned capacity) {
   payload->guard = enif_make_atom(env, "nil");
   payload->size = 0;
   payload->capacity = capacity;
@@ -26,7 +25,8 @@ void shmex_init(ErlNifEnv * env, Shmex * payload, unsigned capacity) {
  *
  * Once the guard is garbage collected, the payload is freed.
  */
-void shmex_add_guard(ErlNifEnv * env, ErlNifResourceType* guard_type, Shmex *payload) {
+void shmex_add_guard(ErlNifEnv *env, ErlNifResourceType *guard_type,
+                     Shmex *payload) {
   ShmexGuard *guard = enif_alloc_resource(guard_type, sizeof(*guard));
   strcpy(guard->name, payload->name);
   payload->guard = enif_make_resource(env, guard);
@@ -38,10 +38,10 @@ void shmex_add_guard(ErlNifEnv * env, ErlNifResourceType* guard_type, Shmex *pay
  *
  * It is to be passed as a destructor to `enif_open_resource_type` function.
  */
-void shmex_guard_destructor(ErlNifEnv* env, void * resource) {
+void shmex_guard_destructor(ErlNifEnv *env, void *resource) {
   BUNCH_UNUSED(env);
 
-  ShmexGuard *guard = (ShmexGuard *) resource;
+  ShmexGuard *guard = (ShmexGuard *)resource;
   shm_unlink(guard->name);
 }
 
@@ -50,7 +50,8 @@ void shmex_guard_destructor(ErlNifEnv* env, void * resource) {
  *
  * Each call should be paired with `shmex_release` call to deallocate resources
  */
-int shmex_get_from_term(ErlNifEnv * env, ERL_NIF_TERM struct_term, Shmex *payload) {
+int shmex_get_from_term(ErlNifEnv *env, ERL_NIF_TERM struct_term,
+                        Shmex *payload) {
   const ERL_NIF_TERM ATOM_NAME = enif_make_atom(env, "name");
   const ERL_NIF_TERM ATOM_GUARD = enif_make_atom(env, "guard");
   const ERL_NIF_TERM ATOM_SIZE = enif_make_atom(env, "size");
@@ -110,7 +111,7 @@ int shmex_get_from_term(ErlNifEnv * env, ERL_NIF_TERM struct_term, Shmex *payloa
     return 0;
   }
   payload->name = malloc(name_binary.size + 1);
-  memcpy(payload->name, (char *) name_binary.data, name_binary.size);
+  memcpy(payload->name, (char *)name_binary.data, name_binary.size);
   payload->name[name_binary.size] = '\0';
 
   return 1;
@@ -123,7 +124,7 @@ int shmex_get_from_term(ErlNifEnv * env, ERL_NIF_TERM struct_term, Shmex *payloa
  * After calling this function, payload is not usable anymore.
  * If the payload was mapped, it is unmapped as well.
  */
-void shmex_release(Shmex * payload) {
+void shmex_release(Shmex *payload) {
   if (payload->name != NULL) {
     free(payload->name);
     payload->name = NULL;
@@ -135,30 +136,24 @@ void shmex_release(Shmex * payload) {
 /**
  * Creates Shmex Elixir struct from Shmex C struct
  */
-ERL_NIF_TERM shmex_make_term(ErlNifEnv * env, Shmex * payload) {
+ERL_NIF_TERM shmex_make_term(ErlNifEnv *env, Shmex *payload) {
   ERL_NIF_TERM keys[SHMEX_ELIXIR_STRUCT_ENTRIES] = {
-    enif_make_atom(env, "__struct__"),
-    enif_make_atom(env, "name"),
-    enif_make_atom(env, "guard"),
-    enif_make_atom(env, "size"),
-    enif_make_atom(env, "capacity")
-  };
+      enif_make_atom(env, "__struct__"), enif_make_atom(env, "name"),
+      enif_make_atom(env, "guard"), enif_make_atom(env, "size"),
+      enif_make_atom(env, "capacity")};
 
   ERL_NIF_TERM name_term;
   unsigned name_len = strlen(payload->name);
-  void * name_ptr = enif_make_new_binary(env, name_len, &name_term);
+  void *name_ptr = enif_make_new_binary(env, name_len, &name_term);
   memcpy(name_ptr, payload->name, name_len);
 
   ERL_NIF_TERM values[SHMEX_ELIXIR_STRUCT_ENTRIES] = {
-    enif_make_atom(env, SHMEX_ELIXIR_STRUCT_ATOM),
-    name_term,
-    payload->guard,
-    enif_make_int(env, payload->size),
-    enif_make_int(env, payload->capacity)
-  };
+      enif_make_atom(env, SHMEX_ELIXIR_STRUCT_ATOM), name_term, payload->guard,
+      enif_make_int(env, payload->size), enif_make_int(env, payload->capacity)};
 
   ERL_NIF_TERM return_term;
-  int res = enif_make_map_from_arrays(env, keys, values, SHMEX_ELIXIR_STRUCT_ENTRIES, &return_term);
+  int res = enif_make_map_from_arrays(
+      env, keys, values, SHMEX_ELIXIR_STRUCT_ENTRIES, &return_term);
   if (res) {
     return return_term;
   } else {
@@ -166,25 +161,24 @@ ERL_NIF_TERM shmex_make_term(ErlNifEnv * env, Shmex * payload) {
   }
 }
 
-
 /**
  * Creates term describing an error encoded in result (ShmexLibResult)
  */
-ERL_NIF_TERM shmex_make_error_term(ErlNifEnv * env, ShmexLibResult result) {
+ERL_NIF_TERM shmex_make_error_term(ErlNifEnv *env, ShmexLibResult result) {
   switch (result) {
-    case SHMEX_RES_OK:
-      return bunch_make_error_internal(env, "ok_is_not_error");
-    case SHMEX_ERROR_SHM_OPEN:
-      return bunch_make_error_errno(env, "shm_open");
-    case SHMEX_ERROR_FTRUNCATE:
-      return bunch_make_error_errno(env, "ftruncate");
-    case SHMEX_ERROR_MMAP:
-      return bunch_make_error_errno(env, "mmap");
-    case SHMEX_ERROR_SHM_MAPPED:
-      return bunch_make_error_internal(env, "shm_is_mapped");
-    case SHMEX_ERROR_INVALID_PAYLOAD:
-      return bunch_make_error_internal(env, "invalid_payload");
-    default:
-      return bunch_make_error_internal(env, "unknown_error");
+  case SHMEX_RES_OK:
+    return bunch_make_error_internal(env, "ok_is_not_error");
+  case SHMEX_ERROR_SHM_OPEN:
+    return bunch_make_error_errno(env, "shm_open");
+  case SHMEX_ERROR_FTRUNCATE:
+    return bunch_make_error_errno(env, "ftruncate");
+  case SHMEX_ERROR_MMAP:
+    return bunch_make_error_errno(env, "mmap");
+  case SHMEX_ERROR_SHM_MAPPED:
+    return bunch_make_error_internal(env, "shm_is_mapped");
+  case SHMEX_ERROR_INVALID_PAYLOAD:
+    return bunch_make_error_internal(env, "invalid_payload");
+  default:
+    return bunch_make_error_internal(env, "unknown_error");
   }
 }
