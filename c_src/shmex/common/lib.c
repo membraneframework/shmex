@@ -12,12 +12,20 @@
 #include <stdio.h>
 #include <errno.h>
 
+#ifdef SHMEX_NIF
+#define ALLOC(X) enif_alloc(X)
+#define FREE(X) enif_free(X)
+#else
+#define ALLOC(X) malloc(X)
+#define FREE(X) free(X)
+#endif
+
 void shmex_generate_name(Shmex * payload) {
   static const unsigned GENERATED_NAME_SIZE = strlen(SHM_NAME_PREFIX) + 21;
   if (payload->name != NULL) {
-    free(payload->name);
+    FREE(payload->name);
   }
-  payload->name = malloc(GENERATED_NAME_SIZE);
+  payload->name = ALLOC(GENERATED_NAME_SIZE);
 
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
