@@ -82,8 +82,7 @@ static ERL_NIF_TERM export_read(ErlNifEnv *env, int argc,
 
   ERL_NIF_TERM return_term;
   if (cnt > payload.size) {
-    return_term =
-        bunch_make_error_args(env, "cnt", "cnt is greater than payload size");
+    return_term = bunch_make_error_str(env, "invalid_read_size");
     goto exit_read;
   }
 

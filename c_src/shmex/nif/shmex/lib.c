@@ -1,4 +1,3 @@
-#include "lib.h"
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
@@ -6,6 +5,8 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+
+#include "lib.h"
 
 /**
  * Initializes Shmex C struct. Should be used before allocating shm from C code.
@@ -157,7 +158,7 @@ ERL_NIF_TERM shmex_make_term(ErlNifEnv *env, Shmex *payload) {
   if (res) {
     return return_term;
   } else {
-    return bunch_make_error_internal(env, "make_map_from_arrays");
+    return bunch_raise_error(env, "cannot create Shmex struct");
   }
 }
 
@@ -167,7 +168,7 @@ ERL_NIF_TERM shmex_make_term(ErlNifEnv *env, Shmex *payload) {
 ERL_NIF_TERM shmex_make_error_term(ErlNifEnv *env, ShmexLibResult result) {
   switch (result) {
   case SHMEX_RES_OK:
-    return bunch_make_error_internal(env, "ok_is_not_error");
+    return bunch_raise_error(env, "ok_is_not_error");
   case SHMEX_ERROR_SHM_OPEN:
     return bunch_make_error_errno(env, "shm_open");
   case SHMEX_ERROR_FTRUNCATE:
@@ -175,10 +176,10 @@ ERL_NIF_TERM shmex_make_error_term(ErlNifEnv *env, ShmexLibResult result) {
   case SHMEX_ERROR_MMAP:
     return bunch_make_error_errno(env, "mmap");
   case SHMEX_ERROR_SHM_MAPPED:
-    return bunch_make_error_internal(env, "shm_is_mapped");
+    return bunch_raise_error(env, "shm_is_mapped");
   case SHMEX_ERROR_INVALID_PAYLOAD:
-    return bunch_make_error_internal(env, "invalid_payload");
+    return bunch_make_error_str(env, "invalid_payload");
   default:
-    return bunch_make_error_internal(env, "unknown_error");
+    return bunch_raise_error(env, "unknown");
   }
 }
