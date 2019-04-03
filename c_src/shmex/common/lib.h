@@ -43,3 +43,4 @@ ShmexLibResult shmex_open_and_mmap(Shmex *payload);
 ShmexLibResult shmex_set_capacity(Shmex *payload, size_t capacity);
 void shmex_unmap(Shmex *payload);
 ShmexLibResult shmex_unlink(Shmex *payload);
+const char *shmex_lib_result_to_string(ShmexLibResult result);

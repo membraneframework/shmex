@@ -174,3 +174,22 @@ ShmexLibResult shmex_unlink(Shmex *payload) {
     return SHMEX_ERROR_INVALID_PAYLOAD;
   }
 }
+
+const char *shmex_lib_result_to_string(ShmexLibResult result) {
+  switch (result) {
+  case SHMEX_RES_OK:
+    return "ok";
+  case SHMEX_ERROR_SHM_OPEN:
+    return "shm_open";
+  case SHMEX_ERROR_FTRUNCATE:
+    return "ftruncate";
+  case SHMEX_ERROR_MMAP:
+    return "mmap";
+  case SHMEX_ERROR_SHM_MAPPED:
+    return "shm_is_mapped";
+  case SHMEX_ERROR_INVALID_PAYLOAD:
+    return "invalid_payload";
+  default:
+    return "unknown";
+  }
+}
