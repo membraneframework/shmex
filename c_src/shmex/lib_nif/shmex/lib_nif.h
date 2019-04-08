@@ -1,9 +1,9 @@
 #pragma once
 
 #define SHMEX_NIF
-#include "../../common/lib.h"
-#include <bunch/bunch.h>
 #include <erl_nif.h>
+#include <bunch/bunch_nif.h>
+#include <shmex/lib.h>
 
 #define NAME_MAX 255
 

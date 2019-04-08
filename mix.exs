@@ -43,7 +43,7 @@ defmodule Shmex.Mixfile do
     [
       {:ex_doc, "~> 0.19", only: :dev, runtime: false},
       {:bundlex, "~> 0.2.3"},
-      {:bunch_native, "~> 0.1.2"}
+      {:bunch_native, "~> 0.2.0"}
     ]
   end
 end

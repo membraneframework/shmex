@@ -1,5 +1,3 @@
-#include "lib.h"
-
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
@@ -7,6 +5,8 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+
+#include "lib_cnode.h"
 
 static int try_decode_nil(const char *buf, int *idx_ptr, int *nil) {
   int idx = *idx_ptr;

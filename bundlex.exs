@@ -11,7 +11,7 @@ defmodule Shmex.BundlexProject do
   defp nifs() do
     [
       shmex: [
-        deps: [shmex: :lib, bunch_native: :bunch],
+        deps: [shmex: :lib_nif, bunch_native: :bunch_nif],
         sources: ["shmex.c"]
       ]
     ]
@@ -21,12 +21,18 @@ defmodule Shmex.BundlexProject do
     [
       lib: [
         deps: [bunch_native: :bunch],
-        src_base: "shmex/nif/shmex",
-        sources: ["lib.c", "../../common/lib.c"]
+        src_base: "shmex/lib/shmex",
+        sources: ["lib.c"]
+      ],
+      lib_nif: [
+        deps: [shmex: :lib, bunch_native: :bunch_nif],
+        src_base: "shmex/lib_nif/shmex",
+        sources: ["lib_nif.c"]
       ],
       lib_cnode: [
-        src_base: "shmex/cnode/shmex",
-        sources: ["lib.c", "../../common/lib.c"]
+        deps: [shmex: :lib, bunch_native: :bunch],
+        src_base: "shmex/lib_cnode/shmex",
+        sources: ["lib_cnode.c"]
       ]
     ]
   end

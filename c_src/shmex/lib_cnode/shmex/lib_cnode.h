@@ -1,6 +1,6 @@
 #define SHMEX_CNODE
-#include "../../common/lib.h"
 #include <ei.h>
+#include <shmex/lib.h>
 
 #define NAME_MAX 255
 

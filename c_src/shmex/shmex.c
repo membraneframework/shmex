@@ -1,7 +1,6 @@
 #define NAME_MAX 255
 #define _POSIX_C_SOURCE 200809L
 
-#include <bunch/bunch.h>
 #include <erl_nif.h>
 #include <fcntl.h>
 #include <string.h>
@@ -9,8 +8,8 @@
 #include <sys/stat.h> /* For mode constants */
 #include <sys/types.h>
 #include <unistd.h>
-
-#include <shmex/lib.h>
+#include <bunch/bunch_nif.h>
+#include <shmex/lib_nif.h>
 
 ErlNifResourceType *SHMEX_GUARD_RESOURCE_TYPE;
 
