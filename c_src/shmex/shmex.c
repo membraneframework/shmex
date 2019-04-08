@@ -148,12 +148,12 @@ static ERL_NIF_TERM export_split_at(ErlNifEnv *env, int argc,
   new_payload.size = new_size;
 
   result = shmex_allocate(&new_payload);
-  shmex_add_guard(env, SHMEX_GUARD_RESOURCE_TYPE, &new_payload);
   if (SHMEX_RES_OK != result) {
     return_term = shmex_make_error_term(env, result);
     goto exit_split_at;
   }
 
+  shmex_add_guard(env, SHMEX_GUARD_RESOURCE_TYPE, &new_payload);
   result = shmex_open_and_mmap(&new_payload);
   if (SHMEX_RES_OK != result) {
     return_term = shmex_make_error_term(env, result);
