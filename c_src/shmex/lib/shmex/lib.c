@@ -74,6 +74,7 @@ ShmexLibResult shmex_allocate(Shmex *payload) {
 shmex_create_exit:
   if (fd > 0) {
     close(fd);
+    shm_unlink(payload->name);
   }
   return result;
 }
