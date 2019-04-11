@@ -22,7 +22,8 @@ defmodule Shmex.BundlexProject do
       lib: [
         deps: [bunch_native: :bunch],
         src_base: "shmex/lib/shmex",
-        sources: ["lib.c"]
+        sources: ["lib.c"],
+        libs: if(Bundlex.platform() == :linux, do: ["rt"], else: [])
       ],
       lib_nif: [
         deps: [shmex: :lib, bunch_native: :bunch_nif],
