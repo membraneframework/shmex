@@ -81,6 +81,15 @@ defmodule Shmex do
     :ok = Native.ensure_not_gc(shm)
   end
 
+  @doc """
+  Returns shared memory contents as a binary.
+  """
+  @spec to_binary(t()) :: binary()
+  def to_binary(shm) do
+    {:ok, binary} = shm |> Native.read()
+    binary
+  end
+
   defp create(capacity) do
     shm_struct = %__MODULE__{capacity: capacity}
     Native.allocate(shm_struct)
