@@ -4,7 +4,6 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdio.h>
-#include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <time.h>
@@ -20,17 +19,11 @@
 #define FREE(X) free(X)
 #endif
 
-void shmex_generate_name(Shmex *payload) {
-  static const unsigned GENERATED_NAME_SIZE = strlen(SHM_NAME_PREFIX) + 21;
-  if (payload->name != NULL) {
-    FREE(payload->name);
-  }
-  payload->name = ALLOC(GENERATED_NAME_SIZE);
-
+void shmex_generate_shm_name(char *name, int attempt) {
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
-  snprintf(payload->name, GENERATED_NAME_SIZE, SHM_NAME_PREFIX "%.12ld%.8ld",
-           ts.tv_sec, ts.tv_nsec);
+  snprintf(name, SHMEX_SHM_NAME_LEN, SHMEX_SHM_NAME_PREFIX "%.11ld%.9ld#%.3d",
+           ts.tv_sec, ts.tv_nsec, attempt);
 }
 
 /**
@@ -48,20 +41,22 @@ ShmexLibResult shmex_allocate(Shmex *payload) {
   ShmexLibResult result;
   int fd = -1;
 
-  int attempts = 1;
-  if (payload->name == NULL) {
-    shmex_generate_name(payload);
-    attempts = SHMEX_ALLOC_MAX_ATTEMPTS;
+  int name_provided = payload->name != NULL;
+  if (!name_provided) {
+    payload->name = ALLOC(SHMEX_SHM_NAME_LEN);
   }
-  fd = shm_open(payload->name, O_RDWR | O_CREAT | O_EXCL, 0666);
-  while (fd < 0) {
-    attempts--;
-    if (errno != EEXIST || attempts <= 0) {
+  for (int attempt = 0;; attempt++) {
+    if (!name_provided) {
+      shmex_generate_shm_name(payload->name, attempt);
+    }
+    fd = shm_open(payload->name, O_RDWR | O_CREAT | O_EXCL, 0666);
+    if (fd >= 0) {
+      break;
+    } else if ((errno != EEXIST && errno != EAGAIN) ||
+               attempt >= SHMEX_ALLOC_MAX_ATTEMPTS || name_provided) {
       result = SHMEX_ERROR_SHM_OPEN;
       goto shmex_create_exit;
     }
-    shmex_generate_name(payload);
-    fd = shm_open(payload->name, O_RDWR | O_CREAT | O_EXCL, 0666);
   }
 
   int ftr_res = ftruncate(fd, payload->capacity);
@@ -74,7 +69,11 @@ ShmexLibResult shmex_allocate(Shmex *payload) {
 shmex_create_exit:
   if (fd > 0) {
     close(fd);
-    shm_unlink(payload->name);
+  }
+  if (SHMEX_RES_OK != result) {
+    if (fd > 0) {
+      shm_unlink(payload->name);
+    }
   }
   return result;
 }
@@ -169,11 +168,28 @@ shmex_set_capacity_exit:
  */
 ShmexLibResult shmex_unlink(Shmex *payload) {
   if (payload->name != NULL) {
-    shm_unlink(payload->name);
+    shmex_shm_unlink(payload->name);
     return SHMEX_RES_OK;
   } else {
     return SHMEX_ERROR_INVALID_PAYLOAD;
   }
+}
+
+/**
+ * Unlinks shared memory segment by name. Works the same way as `shm_unlink`,
+ * but contains checks to prevent name conflicts when dealing with SHMs allocated
+ * with `shmex_allocate`.
+ */
+void shmex_shm_unlink(char *name) {
+  static const unsigned name_cmp_prefix_len =
+      SHMEX_SHM_NAME_PREFIX_LEN + SHMEX_SHM_NAME_TIME_ID_LEN;
+  char current_name[SHMEX_SHM_NAME_LEN];
+  if (!strncmp(name, SHMEX_SHM_NAME_PREFIX, SHMEX_SHM_NAME_PREFIX_LEN)) {
+    do {
+      shmex_generate_shm_name(current_name, 0);
+    } while (strncmp(name, current_name, name_cmp_prefix_len) >= 0);
+  }
+  shm_unlink(name);
 }
 
 const char *shmex_lib_result_to_string(ShmexLibResult result) {

@@ -43,7 +43,7 @@ void shmex_guard_destructor(ErlNifEnv *env, void *resource) {
   BUNCH_UNUSED(env);
 
   ShmexGuard *guard = (ShmexGuard *)resource;
-  shm_unlink(guard->name);
+  shmex_shm_unlink(guard->name);
 }
 
 /**

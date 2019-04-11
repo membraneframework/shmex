@@ -135,7 +135,6 @@ static ERL_NIF_TERM export_split_at(ErlNifEnv *env, int argc,
   shmex_init(env, &new_payload, 4096);
 
   ERL_NIF_TERM return_term;
-  int new_fd = -1;
 
   ShmexLibResult result = shmex_open_and_mmap(&old_payload);
   if (SHMEX_RES_OK != result) {
@@ -170,9 +169,6 @@ static ERL_NIF_TERM export_split_at(ErlNifEnv *env, int argc,
                             shmex_make_term(env, &new_payload)));
 
 exit_split_at:
-  if (new_fd > 0) {
-    close(new_fd);
-  }
   shmex_release(&old_payload);
   shmex_release(&new_payload);
   return return_term;
