@@ -15,7 +15,7 @@ defmodule Shmex.Native do
   using it unmaps it
   """
   @spec allocate(Shmex.t()) ::
-          {:ok, Shmex.t()} | {:error, {:ftruncate, :file.posix()}}
+          {:ok, Shmex.t()} | {:error, {:file.posix(), :ftruncate}}
   defnif allocate(shm)
 
   @doc """
@@ -34,13 +34,13 @@ defmodule Shmex.Native do
   Sets the capacity of shared memory area and updates the Shmex struct accordingly.
   """
   @spec set_capacity(Shmex.t(), capacity :: pos_integer()) ::
-          {:ok, Shmex.t()} | {:error, {:shm_open | :ftruncate, :file.posix()}}
+          {:ok, Shmex.t()} | {:error, {:file.posix(), :shm_open | :ftruncate}}
   defnif set_capacity(shm, capacity)
 
   @doc """
   Reads the contents of shared memory and returns it as a binary.
   """
-  @spec read(Shmex.t()) :: {:ok, Shmex.t()} | {:error, {:shm_open | :mmap, :file.posix()}}
+  @spec read(Shmex.t()) :: {:ok, binary} | {:error, {:file.posix(), :shm_open | :mmap}}
   def read(%Shmex{size: size} = shm) do
     read(shm, size)
   end
@@ -51,7 +51,7 @@ defmodule Shmex.Native do
   `cnt` should not be greater than `shm.size`
   """
   @spec read(Shmex.t(), read_size :: non_neg_integer()) ::
-          {:ok, binary()} | {:error, :invalid_read_size | {:shm_open | :mmap, :file.posix()}}
+          {:ok, binary()} | {:error, :invalid_read_size | {:file.posix(), :shm_open | :mmap}}
   defnif read(shm, read_size)
 
   @doc """
@@ -61,7 +61,7 @@ defmodule Shmex.Native do
   to fit the data.
   """
   @spec write(Shmex.t(), data :: binary()) ::
-          {:ok, Shmex.t()} | {:error, {:shm_open | :mmap, :file.posix()}}
+          {:ok, Shmex.t()} | {:error, {:file.posix(), :shm_open | :mmap}}
   defnif write(shm, data)
 
   @doc """
@@ -76,7 +76,7 @@ defmodule Shmex.Native do
   """
   @spec split_at(Shmex.t(), position :: non_neg_integer()) ::
           {:ok, {Shmex.t(), Shmex.t()}}
-          | {:error, {:shm_open | :mmap | :ftruncate, :file.posix()}}
+          | {:error, {:file.posix(), :shm_open | :mmap | :ftruncate}}
   defnif split_at(shm, position)
 
   @doc """
@@ -88,7 +88,7 @@ defmodule Shmex.Native do
   The second one, the source, will remain unmodified.
   """
   @spec concat(target :: Shmex.t(), source :: Shmex.t()) ::
-          {:ok, Shmex.t()} | {:error, {:shm_open | :mmap | :ftruncate, :file.posix()}}
+          {:ok, Shmex.t()} | {:error, {:file.posix(), :shm_open | :mmap | :ftruncate}}
   defnif concat(target, source)
 
   @doc """
@@ -104,7 +104,7 @@ defmodule Shmex.Native do
   @doc """
   Trims shared memory capacity to match its size.
   """
-  @spec trim(Shmex.t()) :: {:ok, Shmex.t()} | {:error, {:shm_open | :ftruncate, :file.posix()}}
+  @spec trim(Shmex.t()) :: {:ok, Shmex.t()} | {:error, {:file.posix(), :shm_open | :ftruncate}}
   def trim(%Shmex{size: size} = shm) do
     shm |> set_capacity(size)
   end
@@ -114,7 +114,7 @@ defmodule Shmex.Native do
   trims it to match the new size.
   """
   @spec trim(Shmex.t(), bytes :: non_neg_integer) ::
-          {:ok, Shmex.t()} | {:error, {:shm_open | :mmap, :file.posix()}}
+          {:ok, Shmex.t()} | {:error, {:file.posix(), :shm_open | :mmap}}
   def trim(shm, bytes) do
     with {:ok, trimmed_front} <- trim_leading(shm, bytes),
          {:ok, result} <- trim(trimmed_front) do
