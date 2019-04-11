@@ -80,16 +80,17 @@ defmodule Shmex.Native do
   defnif split_at(shm, position)
 
   @doc """
-  Concatenates two shared memory areas by copying the data from the second
-  at the end of the first one.
+  Concatenates two shared memory areas by appending the data from the second
+  at the end of the first one. Fails with `{:error, {:einval, :ftruncate}}` if
+  OS does not support changing shared memory capacity.
 
   The first shared memory is a target that will contain data from both shared memory areas.
   Its capacity will be set to the sum of sizes of both shared memory areas.
   The second one, the source, will remain unmodified.
   """
-  @spec concat(target :: Shmex.t(), source :: Shmex.t()) ::
+  @spec append(target :: Shmex.t(), source :: Shmex.t()) ::
           {:ok, Shmex.t()} | {:error, {:file.posix(), :shm_open | :mmap | :ftruncate}}
-  defnif concat(target, source)
+  defnif append(target, source)
 
   @doc """
   Ensures that shared memory is not garbage collected at the point of executing

@@ -204,7 +204,7 @@ static ERL_NIF_TERM export_ensure_not_gc(ErlNifEnv *env, int argc,
   return bunch_make_ok(env);
 }
 
-static ERL_NIF_TERM export_concat(ErlNifEnv *env, int argc,
+static ERL_NIF_TERM export_append(ErlNifEnv *env, int argc,
                                   const ERL_NIF_TERM argv[]) {
   BUNCH_UNUSED(argc);
   PARSE_SHMEX_ARG(0, left);
@@ -246,7 +246,7 @@ static ErlNifFunc nif_funcs[] = {{"allocate", 1, export_allocate, 0},
                                  {"read", 2, export_read, 0},
                                  {"write", 2, export_write, 0},
                                  {"split_at", 2, export_split_at, 0},
-                                 {"concat", 2, export_concat, 0},
+                                 {"append", 2, export_append, 0},
                                  {"trim_leading", 2, export_trim_leading, 0},
                                  {"ensure_not_gc", 1, export_ensure_not_gc, 0}};
 

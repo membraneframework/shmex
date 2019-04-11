@@ -139,7 +139,8 @@ defmodule Shmex.NativeTest do
     assert shm_b.size == data_size - split_pos
   end
 
-  test "concat/2", %{data: data, data_size: data_size} do
+  @tag :shm_resizable
+  test "append/2", %{data: data, data_size: data_size} do
     name_a = @shm_name <> "a"
     name_b = @shm_name <> "b"
     assert {:ok, shm_a} = @module.allocate(%Shmex{name: name_a})
@@ -147,7 +148,7 @@ defmodule Shmex.NativeTest do
 
     assert {:ok, shm_b} = @module.allocate(%Shmex{name: name_b})
     assert {:ok, shm_b} = @module.write(shm_b, data)
-    assert {:ok, res_shm} = @module.concat(shm_a, shm_b)
+    assert {:ok, res_shm} = @module.append(shm_a, shm_b)
 
     shm_a = nil
     shm_b = nil

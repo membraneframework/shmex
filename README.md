@@ -27,6 +27,12 @@ and another one in your native header file
 #import <shmex/lib.h>
 ```
 
+## Testing
+
+To execute tests run `mix test`. These test tags are excluded by default:
+- `shm_tmpfs` - tests that require access to information about shared memory segments present in the OS via tmpfs, not supported e.g. by Mac OS
+- `shm_resizable` - tests for functions that involve resizing existing shared memory segments, not supported e.g. by Mac OS
+
 ## Copyright and License
 
 Copyright 2018, [Software Mansion](https://swmansion.com/?utm_source=git&utm_medium=readme&utm_campaign=membrane)
