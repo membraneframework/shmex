@@ -1,15 +1,15 @@
 #define NAME_MAX 255
 #define _POSIX_C_SOURCE 200809L
 
+#include <bunch/bunch_nif.h>
 #include <erl_nif.h>
 #include <fcntl.h>
+#include <shmex/lib_nif.h>
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h> /* For mode constants */
 #include <sys/types.h>
 #include <unistd.h>
-#include <bunch/bunch_nif.h>
-#include <shmex/lib_nif.h>
 
 ErlNifResourceType *SHMEX_GUARD_RESOURCE_TYPE;
 
@@ -29,10 +29,10 @@ static ERL_NIF_TERM export_allocate(ErlNifEnv *env, int argc,
   PARSE_SHMEX_ARG(0, payload);
   ERL_NIF_TERM return_term;
 
-  ShmexLibResult result = shmex_allocate(&payload);
+  ShmexLibResult result =
+      shmex_allocate(env, SHMEX_GUARD_RESOURCE_TYPE, &payload);
 
   if (SHMEX_RES_OK == result) {
-    shmex_add_guard(env, SHMEX_GUARD_RESOURCE_TYPE, &payload);
     return_term = bunch_make_ok_tuple(env, shmex_make_term(env, &payload));
   } else {
     return_term = shmex_make_error_term(env, result);
@@ -146,13 +146,12 @@ static ERL_NIF_TERM export_split_at(ErlNifEnv *env, int argc,
   new_payload.capacity = new_size;
   new_payload.size = new_size;
 
-  result = shmex_allocate(&new_payload);
+  result = shmex_allocate(env, SHMEX_GUARD_RESOURCE_TYPE, &new_payload);
   if (SHMEX_RES_OK != result) {
     return_term = shmex_make_error_term(env, result);
     goto exit_split_at;
   }
 
-  shmex_add_guard(env, SHMEX_GUARD_RESOURCE_TYPE, &new_payload);
   result = shmex_open_and_mmap(&new_payload);
   if (SHMEX_RES_OK != result) {
     return_term = shmex_make_error_term(env, result);

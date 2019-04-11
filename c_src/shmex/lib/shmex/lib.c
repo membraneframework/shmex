@@ -37,7 +37,7 @@ void shmex_generate_shm_name(char *name, int attempt) {
  * Shared memory can be accessed by using 'shmex_open_and_mmap'.
  * Memory will be unmapped when Shmex struct is freed (by 'shmex_release')
  */
-ShmexLibResult shmex_allocate(Shmex *payload) {
+ShmexLibResult shmex_allocate_unguarded(Shmex *payload) {
   ShmexLibResult result;
   int fd = -1;
 

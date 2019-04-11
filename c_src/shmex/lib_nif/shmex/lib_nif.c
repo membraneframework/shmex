@@ -22,6 +22,20 @@ void shmex_init(ErlNifEnv *env, Shmex *payload, unsigned capacity) {
 }
 
 /**
+ * Allocates shared memory using `shmex_allocate_unguarded` and adds guard to it
+ * with `shmex_add_guard`.
+ */
+ShmexLibResult shmex_allocate(ErlNifEnv *env, ErlNifResourceType *guard_type,
+                              Shmex *payload) {
+  ShmexLibResult result = shmex_allocate_unguarded(payload);
+  if (SHMEX_RES_OK != result) {
+    return result;
+  }
+  shmex_add_guard(env, guard_type, payload);
+  return SHMEX_RES_OK;
+}
+
+/**
  * Creates a guard and adds it to given payload.
  *
  * Once the guard is garbage collected, the payload is freed.

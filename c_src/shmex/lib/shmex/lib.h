@@ -45,7 +45,7 @@ typedef enum ShmexLibResult {
 } ShmexLibResult;
 
 void shmex_generate_shm_name(char *name, int attempt);
-ShmexLibResult shmex_allocate(Shmex *payload);
+ShmexLibResult shmex_allocate_unguarded(Shmex *payload);
 ShmexLibResult shmex_open_and_mmap(Shmex *payload);
 ShmexLibResult shmex_set_capacity(Shmex *payload, size_t capacity);
 void shmex_unmap(Shmex *payload);

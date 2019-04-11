@@ -1,8 +1,8 @@
 #pragma once
 
 #define SHMEX_NIF
-#include <erl_nif.h>
 #include <bunch/bunch_nif.h>
+#include <erl_nif.h>
 #include <shmex/lib.h>
 
 #define NAME_MAX 255
@@ -12,6 +12,8 @@ typedef struct _ShmexGuard {
 } ShmexGuard;
 
 void shmex_init(ErlNifEnv *env, Shmex *payload, unsigned capacity);
+ShmexLibResult shmex_allocate(ErlNifEnv *env, ErlNifResourceType *guard_type,
+                              Shmex *payload);
 void shmex_add_guard(ErlNifEnv *env, ErlNifResourceType *guard_type,
                      Shmex *payload);
 void shmex_guard_destructor(ErlNifEnv *env, void *resource);
