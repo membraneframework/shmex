@@ -41,22 +41,23 @@ ShmexLibResult shmex_allocate_unguarded(Shmex *payload) {
   ShmexLibResult result;
   int fd = -1;
 
-  int name_provided = payload->name != NULL;
-  if (!name_provided) {
+  static const int open_flags = O_RDWR | O_CREAT | O_EXCL;
+  static const int open_privileges = 0666;
+  if (payload->name != NULL) {
+    fd = shm_open(payload->name, open_flags, open_privileges);
+  } else {
     payload->name = ALLOC(SHMEX_SHM_NAME_LEN);
-  }
-  for (int attempt = 0;; attempt++) {
-    if (!name_provided) {
+    int attempt = 0;
+    do {
       shmex_generate_shm_name(payload->name, attempt);
-    }
-    fd = shm_open(payload->name, O_RDWR | O_CREAT | O_EXCL, 0666);
-    if (fd >= 0) {
-      break;
-    } else if ((errno != EEXIST && errno != EAGAIN) ||
-               attempt >= SHMEX_ALLOC_MAX_ATTEMPTS || name_provided) {
-      result = SHMEX_ERROR_SHM_OPEN;
-      goto shmex_create_exit;
-    }
+      fd = shm_open(payload->name, open_flags, open_privileges);
+      attempt++;
+    } while (fd < 0 && (errno == EEXIST || errno == EAGAIN) &&
+             attempt < SHMEX_ALLOC_MAX_ATTEMPTS);
+  }
+  if (fd < 0) {
+    result = SHMEX_ERROR_SHM_OPEN;
+    goto shmex_create_exit;
   }
 
   int ftr_res = ftruncate(fd, payload->capacity);
@@ -177,8 +178,8 @@ ShmexLibResult shmex_unlink(Shmex *payload) {
 
 /**
  * Unlinks shared memory segment by name. Works the same way as `shm_unlink`,
- * but contains checks to prevent name conflicts when dealing with SHMs allocated
- * with `shmex_allocate`.
+ * but contains checks to prevent name conflicts when dealing with SHMs
+ * allocated with `shmex_allocate`.
  */
 void shmex_shm_unlink(char *name) {
   static const unsigned name_cmp_prefix_len =

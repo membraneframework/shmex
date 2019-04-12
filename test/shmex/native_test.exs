@@ -14,17 +14,19 @@ defmodule Shmex.NativeTest do
   setup :testing_data
 
   @tag :shm_tmpfs
-  test "create/1" do
-    shm = %Shmex{name: @shm_name}
-    assert {:ok, new_shm} = @module.allocate(shm)
-    assert new_shm.name == shm.name
-    assert new_shm.guard != nil
-    assert is_reference(new_shm.guard)
-    assert new_shm.size == 0
-    assert new_shm.capacity == shm.capacity
+  test "allocate/1" do
+    [%Shmex{name: @shm_name}, %Shmex{}]
+    |> Enum.each(fn shm ->
+      assert {:ok, new_shm} = @module.allocate(shm)
+      if shm.name, do: assert(new_shm.name == shm.name)
+      assert new_shm.guard != nil
+      assert is_reference(new_shm.guard)
+      assert new_shm.size == 0
+      assert new_shm.capacity == shm.capacity
 
-    assert {:ok, stat} = File.stat(@shm_path)
-    assert stat.size == new_shm.capacity
+      assert {:ok, stat} = File.stat(@shm_path)
+      assert stat.size == new_shm.capacity
+    end)
   end
 
   describe "add_guard/1" do

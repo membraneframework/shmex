@@ -27,13 +27,15 @@ defmodule Shmex do
           capacity: pos_integer()
         }
 
-  defstruct name: nil, guard: nil, size: 0, capacity: 4096
+  @default_capacity 4096
+
+  defstruct name: nil, guard: nil, size: 0, capacity: @default_capacity
 
   @doc """
   Creates a new, empty shared memory area with the given capacity
   """
   @spec empty(capacity :: pos_integer) :: t()
-  def empty(capacity \\ 4096) do
+  def empty(capacity \\ @default_capacity) do
     {:ok, data} = create(capacity)
     data
   end
