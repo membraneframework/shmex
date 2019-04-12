@@ -14,4 +14,4 @@ before_install:
   - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 100
 script:
   - mix format --check-formatted
-  - mix test --include shm_tmpfs --include shm_resizable
+  - mix test
