@@ -216,25 +216,25 @@ static ERL_NIF_TERM export_append(ErlNifEnv *env, int argc,
   result = shmex_set_capacity(&left, new_capacity);
   if (SHMEX_RES_OK != result) {
     return_term = shmex_make_error_term(env, result);
-    goto exit_concat;
+    goto exit_append;
   }
 
   result = shmex_open_and_mmap(&left);
   if (SHMEX_RES_OK != result) {
     return_term = shmex_make_error_term(env, result);
-    goto exit_concat;
+    goto exit_append;
   }
 
   result = shmex_open_and_mmap(&right);
   if (SHMEX_RES_OK != result) {
     return_term = shmex_make_error_term(env, result);
-    goto exit_concat;
+    goto exit_append;
   }
 
   memcpy(left.mapped_memory + left.size, right.mapped_memory, right.size);
   left.size = new_capacity;
   return_term = bunch_make_ok_tuple(env, shmex_make_term(env, &left));
-exit_concat:
+exit_append:
   shmex_release(&left);
   shmex_release(&right);
   return return_term;
