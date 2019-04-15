@@ -4,7 +4,8 @@ defmodule Shmex.NativeTest do
   @module Shmex.Native
 
   @shm_name "/asdf"
-  @shm_path Path.join("/dev/shm", @shm_name)
+  @shm_dir "/dev/shm"
+  @shm_path Path.join(@shm_dir, @shm_name)
 
   setup do
     :erlang.garbage_collect()
@@ -13,12 +14,12 @@ defmodule Shmex.NativeTest do
 
   setup :testing_data
 
-  @tag :shm_tmpfs
-  test "allocate/1" do
-    [%Shmex{name: @shm_name}, %Shmex{}]
-    |> Enum.each(fn shm ->
+  describe "allocate/1" do
+    @describetag :shm_tmpfs
+    test "when name is provided" do
+      shm = %Shmex{name: @shm_name}
       assert {:ok, new_shm} = @module.allocate(shm)
-      if shm.name, do: assert(new_shm.name == shm.name)
+      assert new_shm.name == shm.name
       assert new_shm.guard != nil
       assert is_reference(new_shm.guard)
       assert new_shm.size == 0
@@ -26,7 +27,20 @@ defmodule Shmex.NativeTest do
 
       assert {:ok, stat} = File.stat(@shm_path)
       assert stat.size == new_shm.capacity
-    end)
+    end
+
+    test "when name is not provided" do
+      shm = %Shmex{}
+      assert {:ok, new_shm} = @module.allocate(shm)
+      assert new_shm.name != nil
+      assert new_shm.guard != nil
+      assert is_reference(new_shm.guard)
+      assert new_shm.size == 0
+      assert new_shm.capacity == shm.capacity
+
+      assert {:ok, stat} = File.stat(Path.join(@shm_dir, new_shm.name))
+      assert stat.size == new_shm.capacity
+    end
   end
 
   describe "add_guard/1" do
