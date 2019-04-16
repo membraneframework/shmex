@@ -4,7 +4,8 @@ defmodule Shmex.NativeTest do
   @module Shmex.Native
 
   @shm_name "/asdf"
-  @shm_path Path.join("/dev/shm", @shm_name)
+  @shm_dir "/dev/shm"
+  @shm_path Path.join(@shm_dir, @shm_name)
 
   setup do
     :erlang.garbage_collect()
@@ -13,18 +14,33 @@ defmodule Shmex.NativeTest do
 
   setup :testing_data
 
-  @tag :shm_tmpfs
-  test "create/1" do
-    shm = %Shmex{name: @shm_name}
-    assert {:ok, new_shm} = @module.allocate(shm)
-    assert new_shm.name == shm.name
-    assert new_shm.guard != nil
-    assert is_reference(new_shm.guard)
-    assert new_shm.size == 0
-    assert new_shm.capacity == shm.capacity
+  describe "allocate/1" do
+    @describetag :shm_tmpfs
+    test "when name is provided" do
+      shm = %Shmex{name: @shm_name}
+      assert {:ok, new_shm} = @module.allocate(shm)
+      assert new_shm.name == shm.name
+      assert new_shm.guard != nil
+      assert is_reference(new_shm.guard)
+      assert new_shm.size == 0
+      assert new_shm.capacity == shm.capacity
 
-    assert {:ok, stat} = File.stat(@shm_path)
-    assert stat.size == new_shm.capacity
+      assert {:ok, stat} = File.stat(@shm_path)
+      assert stat.size == new_shm.capacity
+    end
+
+    test "when name is not provided" do
+      shm = %Shmex{}
+      assert {:ok, new_shm} = @module.allocate(shm)
+      assert new_shm.name != nil
+      assert new_shm.guard != nil
+      assert is_reference(new_shm.guard)
+      assert new_shm.size == 0
+      assert new_shm.capacity == shm.capacity
+
+      assert {:ok, stat} = File.stat(Path.join(@shm_dir, new_shm.name))
+      assert stat.size == new_shm.capacity
+    end
   end
 
   describe "add_guard/1" do
@@ -138,7 +154,8 @@ defmodule Shmex.NativeTest do
     assert shm_b.size == data_size - split_pos
   end
 
-  test "concat/2", %{data: data, data_size: data_size} do
+  @tag :shm_resizable
+  test "append/2", %{data: data, data_size: data_size} do
     name_a = @shm_name <> "a"
     name_b = @shm_name <> "b"
     assert {:ok, shm_a} = @module.allocate(%Shmex{name: name_a})
@@ -146,7 +163,7 @@ defmodule Shmex.NativeTest do
 
     assert {:ok, shm_b} = @module.allocate(%Shmex{name: name_b})
     assert {:ok, shm_b} = @module.write(shm_b, data)
-    assert {:ok, res_shm} = @module.concat(shm_a, shm_b)
+    assert {:ok, res_shm} = @module.append(shm_a, shm_b)
 
     shm_a = nil
     shm_b = nil

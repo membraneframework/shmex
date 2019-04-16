@@ -42,8 +42,8 @@ defmodule Shmex.Mixfile do
   defp deps() do
     [
       {:ex_doc, "~> 0.19", only: :dev, runtime: false},
-      {:bundlex, "~> 0.2.0"},
-      {:bunch_native, "~> 0.1.2"}
+      {:bundlex, "~> 0.2.4"},
+      {:bunch_native, "~> 0.2.0"}
     ]
   end
 end

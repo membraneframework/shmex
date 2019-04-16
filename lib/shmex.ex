@@ -27,13 +27,15 @@ defmodule Shmex do
           capacity: pos_integer()
         }
 
-  defstruct name: nil, guard: nil, size: 0, capacity: 4096
+  @default_capacity 4096
+
+  defstruct name: nil, guard: nil, size: 0, capacity: @default_capacity
 
   @doc """
   Creates a new, empty shared memory area with the given capacity
   """
   @spec empty(capacity :: pos_integer) :: t()
-  def empty(capacity \\ 4096) do
+  def empty(capacity \\ @default_capacity) do
     {:ok, data} = create(capacity)
     data
   end
@@ -79,6 +81,15 @@ defmodule Shmex do
   @spec ensure_not_gc(t()) :: :ok
   def ensure_not_gc(shm) do
     :ok = Native.ensure_not_gc(shm)
+  end
+
+  @doc """
+  Returns shared memory contents as a binary.
+  """
+  @spec to_binary(t()) :: binary()
+  def to_binary(shm) do
+    {:ok, binary} = shm |> Native.read()
+    binary
   end
 
   defp create(capacity) do
