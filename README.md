@@ -14,7 +14,7 @@ The source code is available at [GitHub](https://github.com/membraneframework/sh
 Add the following line to your `deps` in `mix.exs`. Run `mix deps.get`.
 
 ```elixir
-{:shmex, "~> 0.1"}
+{:shmex, "~> 0.2.0"}
 ```
 
 All native stuff is exported as `:lib` [Bundlex](https://hex.pm/packages/bundlex) dependency.
