@@ -1,6 +1,6 @@
 # Shmex
 
-[![Build Status](https://travis-ci.com/membraneframework/shmex.svg?branch=master)](https://travis-ci.com/membraneframework/shmex)
+[![CircleCI](https://circleci.com/gh/membraneframework/shmex.svg?style=svg)](https://circleci.com/gh/membraneframework/shmex)
 
 Shmex is a library providing Elixir bindings for shared memory and native
 functions to manipulate it in NIFs.
