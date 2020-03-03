@@ -1,5 +1,7 @@
 # Shmex
 
+[![Hex.pm](https://img.shields.io/hexpm/v/shmex.svg)](https://hex.pm/packages/shmex)
+[![API Docs](https://img.shields.io/badge/api-docs-yellow.svg?style=flat)](https://hexdocs.pm/shmex/)
 [![CircleCI](https://circleci.com/gh/membraneframework/shmex.svg?style=svg)](https://circleci.com/gh/membraneframework/shmex)
 
 Shmex is a library providing Elixir bindings for shared memory and native
