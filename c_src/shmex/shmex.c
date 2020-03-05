@@ -23,6 +23,26 @@ int load(ErlNifEnv *env, void **priv_data, ERL_NIF_TERM load_info) {
   return 0;
 }
 
+static ERL_NIF_TERM export_realloc(ErlNifEnv *env, int argc,
+                                   const ERL_NIF_TERM argv[]) {
+  BUNCH_UNUSED(argc);
+  PARSE_SHMEX_ARG(0, payload);
+  BUNCH_PARSE_UINT_ARG(1, dest_size);
+
+  ERL_NIF_TERM return_term;
+
+  ShmexLibResult result = shmex_realloc(&payload, dest_size);
+
+  if (SHMEX_RES_OK == result) {
+    return_term = bunch_make_ok_tuple(env, shmex_make_term(env, &payload));
+  } else {
+    return_term = shmex_make_error_term(env, result);
+  }
+
+  shmex_release(&payload);
+  return return_term;
+}
+
 static ERL_NIF_TERM export_allocate(ErlNifEnv *env, int argc,
                                     const ERL_NIF_TERM argv[]) {
   BUNCH_UNUSED(argc);
@@ -248,6 +268,7 @@ static ErlNifFunc nif_funcs[] = {{"allocate", 1, export_allocate, 0},
                                  {"split_at", 2, export_split_at, 0},
                                  {"append", 2, export_append, 0},
                                  {"trim_leading", 2, export_trim_leading, 0},
-                                 {"ensure_not_gc", 1, export_ensure_not_gc, 0}};
+                                 {"ensure_not_gc", 1, export_ensure_not_gc, 0},
+                                 {"realloc", 2, export_realloc, 0}};
 
 ERL_NIF_INIT(Elixir.Shmex.Native.Nif, nif_funcs, load, NULL, NULL, NULL)

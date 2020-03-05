@@ -41,6 +41,15 @@ defmodule Shmex do
   end
 
   @doc """
+  Reallocs given shared memory area to the given size
+  """
+  @spec realloc(shm :: t(), dest_size :: pos_integer) :: t()
+  def realloc(shm, dest_size) do
+    {:ok, data} = Native.realloc(shm, dest_size)
+    data
+  end
+
+  @doc """
   Creates a new shared memory area filled with the existing data.
   """
   @spec new(binary()) :: t()

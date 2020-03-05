@@ -14,6 +14,7 @@ typedef struct _ShmexGuard {
 void shmex_init(ErlNifEnv *env, Shmex *payload, unsigned capacity);
 ShmexLibResult shmex_allocate(ErlNifEnv *env, ErlNifResourceType *guard_type,
                               Shmex *payload);
+ShmexLibResult shmex_realloc(Shmex *shmex, unsigned int dest_size);
 void shmex_add_guard(ErlNifEnv *env, ErlNifResourceType *guard_type,
                      Shmex *payload);
 void shmex_guard_destructor(ErlNifEnv *env, void *resource);

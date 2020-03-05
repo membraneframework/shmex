@@ -197,3 +197,17 @@ ERL_NIF_TERM shmex_make_error_term(ErlNifEnv *env, ShmexLibResult result) {
     return bunch_raise_error(env, "unknown");
   }
 }
+
+ShmexLibResult shmex_realloc(Shmex *shmex, unsigned int dest_size) {
+  shmex_unmap(shmex);
+  ShmexLibResult shmex_res = shmex_set_capacity(shmex, dest_size);
+  if (shmex_res != SHMEX_RES_OK) {
+    return shmex_res;
+  }
+  shmex_res = shmex_open_and_mmap(shmex);
+  if (shmex_res != SHMEX_RES_OK) {
+    return shmex_res;
+  }
+  shmex->size = dest_size;
+  return shmex_res;
+}

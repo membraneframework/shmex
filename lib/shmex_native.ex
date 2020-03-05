@@ -18,6 +18,10 @@ defmodule Shmex.Native do
           {:ok, Shmex.t()} | {:error, {:file.posix(), :ftruncate}}
   defnif allocate(shm)
 
+  @spec realloc(Shmex.t(), dest_size :: pos_integer) ::
+          {:ok, Shmex.t()} | {:error, {:file.posix(), :ftruncate}}
+  defnif realloc(shm, dest_size)
+
   @doc """
   Creates guard for existing shared memory.
 
@@ -81,7 +85,7 @@ defmodule Shmex.Native do
 
   @doc """
   Concatenates two shared memory areas by appending the data from the second
-  at the end of the first one. Fails with `{:error, {:einval, :ftruncate}}` if
+  at the end of the first one. Fails with `{:nerror, {:einval, :ftruncate}}` if
   OS does not support changing shared memory capacity.
 
   The first shared memory is a target that will contain data from both shared memory areas.
