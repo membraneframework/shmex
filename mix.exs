@@ -42,8 +42,10 @@ defmodule Shmex.Mixfile do
   defp deps() do
     [
       {:ex_doc, "~> 0.21", only: :dev, runtime: false},
-      {:bundlex, "~> 0.2.8"},
-      {:bunch_native, "~> 0.2.0"}
+      # {:bundlex, "~> 0.2.8"},
+      {:bundlex, git: "git@github.com:membraneframework/bundlex.git"},
+      # {:bunch_native, "~> 0.2.0"}
+      {:bunch_native, git: "git@github.com:membraneframework/bunch-native.git", branch: "bundlex"}
     ]
   end
 end
