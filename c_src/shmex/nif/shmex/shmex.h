@@ -1,7 +1,7 @@
 #pragma once
 
 #define SHMEX_NIF
-#include <bunch/bunch_nif.h>
+#include <bunch/bunch.h>
 #include <erl_nif.h>
 #include <shmex/lib.h>
 

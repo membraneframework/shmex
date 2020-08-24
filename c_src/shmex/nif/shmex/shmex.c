@@ -6,7 +6,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "lib_nif.h"
+#include "shmex.h"
 
 /**
  * Initializes Shmex C struct. Should be used before allocating shm from C code.
