@@ -6,7 +6,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "lib_cnode.h"
+#include "shmex.h"
 
 static int try_decode_nil(const char *buf, int *idx_ptr, int *nil) {
   int idx = *idx_ptr;

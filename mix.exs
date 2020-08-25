@@ -1,7 +1,7 @@
 defmodule Shmex.Mixfile do
   use Mix.Project
 
-  @version "0.2.1"
+  @version "0.3.0"
   @github_url "https://github.com/membraneframework/shmex"
 
   def project do
@@ -34,7 +34,7 @@ defmodule Shmex.Mixfile do
   defp docs do
     [
       main: "readme",
-      extras: ["README.md"],
+      extras: ["README.md", "LICENSE"],
       source_ref: "v#{@version}"
     ]
   end
@@ -42,8 +42,8 @@ defmodule Shmex.Mixfile do
   defp deps() do
     [
       {:ex_doc, "~> 0.21", only: :dev, runtime: false},
-      {:bundlex, "~> 0.2.8"},
-      {:bunch_native, "~> 0.2.0"}
+      {:bundlex, "~> 0.4.0"},
+      {:bunch_native, "~> 0.3.0"}
     ]
   end
 end

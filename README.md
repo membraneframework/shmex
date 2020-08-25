@@ -16,10 +16,10 @@ The source code is available at [GitHub](https://github.com/membraneframework/sh
 Add the following line to your `deps` in `mix.exs`. Run `mix deps.get`.
 
 ```elixir
-{:shmex, "~> 0.2.0"}
+{:shmex, "~> 0.3.0"}
 ```
 
-All native stuff is exported as `:lib` [Bundlex](https://hex.pm/packages/bundlex) dependency.
+All native stuff is exported in `:lib` and `:shmex` [Bundlex](https://hex.pm/packages/bundlex) dependencies.
 To import, add the following line to your nif specification in `bundlex.exs`
 ```elixir
 deps: [shmex: :lib]

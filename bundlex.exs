@@ -3,15 +3,16 @@ defmodule Shmex.BundlexProject do
 
   def project do
     [
-      nifs: nifs(),
+      natives: natives(),
       libs: libs()
     ]
   end
 
-  defp nifs() do
+  defp natives() do
     [
       shmex: [
-        deps: [shmex: :lib_nif, bunch_native: :bunch_nif],
+        interface: :nif,
+        deps: [shmex: :shmex, bunch_native: :bunch],
         sources: ["shmex.c"]
       ]
     ]
@@ -20,20 +21,21 @@ defmodule Shmex.BundlexProject do
   defp libs() do
     [
       lib: [
-        deps: [bunch_native: :bunch],
-        src_base: "shmex/lib/shmex",
+        src_base: "shmex/shmex",
         sources: ["lib.c"],
         libs: if(Bundlex.platform() == :linux, do: ["rt"], else: [])
       ],
-      lib_nif: [
-        deps: [shmex: :lib, bunch_native: :bunch_nif],
-        src_base: "shmex/lib_nif/shmex",
-        sources: ["lib_nif.c"]
-      ],
-      lib_cnode: [
+      shmex: [
+        interface: :nif,
         deps: [shmex: :lib, bunch_native: :bunch],
-        src_base: "shmex/lib_cnode/shmex",
-        sources: ["lib_cnode.c"]
+        src_base: "shmex/nif/shmex",
+        sources: ["shmex.c"]
+      ],
+      shmex: [
+        interface: :cnode,
+        deps: [shmex: :lib],
+        src_base: "shmex/cnode/shmex",
+        sources: ["shmex.c"]
       ]
     ]
   end
