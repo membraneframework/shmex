@@ -30,7 +30,7 @@ void shmex_generate_shm_name(char *name, int attempt) {
  * Allocates POSIX shared memory given the data (name, capacity) in Shmex
  * struct.
  *
- * If name in Shmex is set to NULL, the name will be (re)genrated until
+ * If name in Shmex is set to NULL, the name will be (re)generated until
  * the one that haven't been used is found (at most SHMEX_ALLOC_MAX_ATTEMPTS
  * times).
  *

@@ -111,7 +111,7 @@ defmodule Shmex.Native do
   end
 
   @doc """
-  Drops `bytes` bytes from the beggining of shared memory area and
+  Drops `bytes` bytes from the beginning of shared memory area and
   trims it to match the new size.
   """
   @spec trim(Shmex.t(), bytes :: non_neg_integer) ::
