@@ -14,7 +14,7 @@ defmodule Shmex do
   and should always be passed around as a whole
 
   ...including passing to the native code - there are functions in `:shmex_lib`
-  (a native library exported via Bundlex) that will allow to transorm Elixir
+  (a native library exported via Bundlex) that will allow to transform Elixir
   struct into a C struct and then access the shared memory from the native code.)
 
   Shared memory should be available as long as the associated struct is not
