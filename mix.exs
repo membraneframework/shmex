@@ -8,14 +8,15 @@ defmodule Shmex.Mixfile do
     [
       app: :shmex,
       version: @version,
-      elixir: "~> 1.7",
+      elixir: "~> 1.12",
       compilers: [:bundlex] ++ Mix.compilers(),
       description: "Elixir bindings for shared memory",
       package: package(),
       name: "Shmex",
       source_url: @github_url,
       docs: docs(),
-      deps: deps()
+      deps: deps(),
+      dialyzer: dialyzer()
     ]
   end
 
@@ -35,15 +36,31 @@ defmodule Shmex.Mixfile do
     [
       main: "readme",
       extras: ["README.md", "LICENSE"],
+      formatters: ["html"],
       source_ref: "v#{@version}"
     ]
   end
 
   defp deps() do
     [
-      {:ex_doc, "~> 0.21", only: :dev, runtime: false},
       {:bundlex, "~> 1.0"},
-      {:bunch_native, "~> 0.5.0"}
+      {:bunch_native, "~> 0.5.0"},
+      {:ex_doc, "~> 0.21", only: :dev, runtime: false},
+      {:dialyxir, ">= 0.0.0", only: :dev, runtime: false},
+      {:credo, ">= 0.0.0", only: :dev, runtime: false}
     ]
+  end
+
+  defp dialyzer() do
+    opts = [
+      flags: [:error_handling]
+    ]
+
+    if System.get_env("CI") == "true" do
+      # Store PLTs in cacheable directory for CI
+      [plt_local_path: "priv/plts", plt_core_path: "priv/plts"] ++ opts
+    else
+      opts
+    end
   end
 end

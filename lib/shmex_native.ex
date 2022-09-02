@@ -120,6 +120,8 @@ defmodule Shmex.Native do
     with {:ok, trimmed_front} <- trim_leading(shm, bytes),
          {:ok, result} <- trim(trimmed_front) do
       {:ok, result}
+    else
+      err -> err
     end
   end
 
