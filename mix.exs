@@ -20,6 +20,12 @@ defmodule Shmex.Mixfile do
     ]
   end
 
+  def application do
+    [
+      extra_applications: [:logger]
+    ]
+  end
+
   defp package do
     [
       maintainers: ["Membrane Team"],
