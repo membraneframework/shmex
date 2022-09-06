@@ -84,7 +84,7 @@ defmodule Shmex.NativeTest do
       assert {:ok, stat} = File.stat(@shm_path)
       assert stat.size == capacity
 
-      assert <<tested_head::binary-size(data_size), _::binary>> = File.read!(@shm_path)
+      assert <<tested_head::binary-size(data_size), _tail::binary>> = File.read!(@shm_path)
       assert tested_head == data
       @module.ensure_not_gc(shm)
     end
@@ -135,7 +135,7 @@ defmodule Shmex.NativeTest do
       assert {:ok, shm} = @module.write(shm, data)
       size = 6
       assert {:ok, data_read} = @module.read(shm, size)
-      <<data_part::binary-size(size), _::binary>> = data
+      <<data_part::binary-size(size), _tail::binary>> = data
       assert data_read == data_part
     end
   end
@@ -215,7 +215,8 @@ defmodule Shmex.NativeTest do
     assert @module.read(shm) == {:ok, trimmed_data}
   end
 
-  def testing_data(_) do
+  @spec testing_data(any()) :: [data: String.t(), data_size: non_neg_integer()]
+  def testing_data(_ctx) do
     data = "some testing data"
 
     [

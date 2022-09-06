@@ -21,8 +21,8 @@ defmodule Shmex do
   garbage collected.
   """
   @type t :: %__MODULE__{
-          name: binary(),
-          guard: reference(),
+          name: binary() | nil,
+          guard: reference() | nil,
           size: non_neg_integer(),
           capacity: pos_integer()
         }

@@ -1,7 +1,8 @@
 [
   inputs: [
     "{lib,test,config}/**/*.{ex,exs}",
-    "./*.exs"
+    ".formatter.exs",
+    "*.exs"
   ],
   import_deps: [:bundlex]
 ]

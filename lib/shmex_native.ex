@@ -117,9 +117,8 @@ defmodule Shmex.Native do
   @spec trim(Shmex.t(), bytes :: non_neg_integer) ::
           {:ok, Shmex.t()} | {:error, {:file.posix(), :shm_open | :mmap}}
   def trim(shm, bytes) do
-    with {:ok, trimmed_front} <- trim_leading(shm, bytes),
-         {:ok, result} <- trim(trimmed_front) do
-      {:ok, result}
+    with {:ok, trimmed_front} <- trim_leading(shm, bytes) do
+      trim(trimmed_front)
     end
   end
 
