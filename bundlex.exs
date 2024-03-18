@@ -23,7 +23,7 @@ defmodule Shmex.BundlexProject do
       lib: [
         src_base: "shmex/shmex",
         sources: ["lib.c"],
-        libs: if(Bundlex.platform() == :linux, do: ["rt"], else: [])
+        libs: if(Bundlex.get_target().os == "linux", do: ["rt"], else: [])
       ],
       shmex: [
         interface: :nif,
