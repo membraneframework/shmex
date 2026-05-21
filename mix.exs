@@ -29,7 +29,7 @@ defmodule Shmex.Mixfile do
   defp package do
     [
       maintainers: ["Membrane Team"],
-      licenses: ["Apache 2.0"],
+      licenses: ["Apache-2.0"],
       files: ["lib", "c_src", "mix.exs", "README*", "LICENSE*", ".formatter.exs", "bundlex.exs"],
       links: %{
         "GitHub" => @github_url,
