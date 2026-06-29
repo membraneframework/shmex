@@ -17,7 +17,7 @@ defmodule Shmex.Mixfile do
       docs: docs(),
       deps: deps(),
       dialyzer: dialyzer(),
-      aliases: [docs: ["docs", &prepend_llms_links/1]]
+      aliases: [docs: ["docs", &append_llms_links/1]]
     ]
   end
 
@@ -70,7 +70,7 @@ defmodule Shmex.Mixfile do
     end
   end
 
-  defp prepend_llms_links(_) do
+  defp append_llms_links(_args) do
     output_dir = docs()[:output] || "doc"
     path = Path.join(output_dir, "llms.txt")
 
